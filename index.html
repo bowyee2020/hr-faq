@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>HR智能问答</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --primary: #07c160;
+    --primary-light: #e8f8ef;
+    --primary-dark: #06ad56;
+    --bg: #f5f6f8;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --text-secondary: #888;
+    --text-tertiary: #bbb;
+    --border: #ebebeb;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --think-bg: #f0f7ff;
+    --think-border: #4a90d9;
+    --formula-bg: #fff8e6;
+    --formula-border: #f0a020;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+    padding: 20px 16px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(7,193,96,0.25);
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .header-title { font-size: 19px; font-weight: 700; color: #fff; }
+  .header-sub { font-size: 12px; color: rgba(255,255,255,0.75); margin-left: auto; }
+  .search-wrap { position: relative; }
+  .search-input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    border: none;
+    border-radius: 24px;
+    font-size: 15.5px;
+    outline: none;
+    background: rgba(255,255,255,0.95);
+    -webkit-appearance: none;
+    transition: background 0.2s;
+    color: #333;
+  }
+  .search-input::placeholder { color: #999; }
+  .search-input:focus { background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,0.3); }
+  .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 17px; }
+
+  /* Example chips */
+  .examples {
+    display: flex;
+    gap: 8px;
+    padding: 10px 14px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .examples::-webkit-scrollbar { display: none; }
+  .example-chip {
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 14px;
+    font-size: 12.5px;
+    color: #fff;
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .example-chip:active { background: rgba(255,255,255,0.35); }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 116px;
+    z-index: 9;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    background: transparent;
+    font-size: 14.5px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.15s;
+  }
+  .tab-btn.active { color: var(--primary); font-weight: 600; }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 28px; height: 3px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+
+  /* Content */
+  .content { padding: 8px 14px 60px; }
+
+  /* Thinking Process */
+  .thinking-card {
+    background: var(--think-bg);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--think-border);
+  }
+  .thinking-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--think-border);
+  }
+  .thinking-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .think-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13.5px;
+    color: #555;
+    line-height: 1.6;
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .think-step.shown { opacity: 1; transform: translateX(0); }
+  .think-step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--think-border);
+    color: #fff;
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .think-loading {
+    font-size: 13px;
+    color: var(--think-border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .think-loading-dots span {
+    display: inline-block;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--think-border);
+    animation: dotPulse 1.4s infinite;
+  }
+  .think-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .think-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotPulse {
+    0%, 60%, 100% { opacity: 0.3; }
+    30% { opacity: 1; }
+  }
+
+  /* Smart Answer */
+  .smart-answer {
+    background: linear-gradient(135deg, #e8f8ef 0%, #d4f5e3 100%);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    border-left: 4px solid var(--primary);
+  }
+  .smart-answer-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .smart-badge {
+    background: var(--primary);
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .smart-answer-content {
+    font-size: 14.5px;
+    line-height: 1.8;
+    color: #333;
+    white-space: pre-wrap;
+  }
+  .smart-answer-footer {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .smart-source {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: rgba(255,255,255,0.7);
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+
+  /* Formula Box */
+  .formula-box {
+    background: var(--formula-bg);
+    border: 1.5px solid var(--formula-border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin: 10px 0;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #8a5a00;
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .formula-label {
+    font-size: 12px;
+    color: var(--formula-border);
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-family: -apple-system, sans-serif;
+  }
+
+  /* Categories */
+  .categories {
+    display: flex;
+    gap: 8px;
+    padding: 0 0 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .categories::-webkit-scrollbar { display: none; }
+  .cat-chip {
+    padding: 6px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    font-size: 14px;
+    white-space: nowrap;
+    cursor: pointer;
+    background: #fff;
+    color: var(--text);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .cat-chip.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+
+  /* Q&A */
+  .section-title {
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 4px 2px 10px;
+    font-weight: 500;
+  }
+  .qa-list { display: flex; flex-direction: column; gap: 10px; }
+  .qa-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid transparent;
+  }
+  .qa-card.active { border-color: var(--primary); }
+  .qa-card.highlight { border-color: var(--primary); background: #f9fffb; }
+  .qa-question {
+    padding: 14px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.45;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .qa-question-text { flex: 1; }
+  .qa-toggle {
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    color: var(--text-tertiary);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .qa-card.active .qa-toggle { transform: rotate(180deg); color: var(--primary); }
+  .qa-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+  .qa-card.active .qa-body { max-height: 1000px; }
+  .qa-answer {
+    padding: 0 16px 14px;
+    font-size: 14.5px;
+    color: #555;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .qa-footer {
+    padding: 0 16px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .qa-tag {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    background: var(--bg);
+    padding: 3px 9px;
+    border-radius: 4px;
+  }
+  .qa-match-score {
+    font-size: 11px;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-left: auto;
+  }
+  .copy-btn {
+    padding: 7px 16px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 32px;
+  }
+  .copy-btn:active { transform: scale(0.96); }
+  .copy-btn.copied { background: #00b578; }
+
+  /* Empty */
+  .empty { text-align: center; padding: 40px 20px; color: var(--text-tertiary); }
+  .empty-icon { font-size: 40px; margin-bottom: 8px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 22px;
+    font-size: 14px;
+    z-index: 200;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 300;
+  }
+  .modal-overlay.show { display: flex; }
+  .copy-modal {
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    max-width: 500px;
+    padding: 20px 16px 30px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .copy-modal-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; text-align: center; }
+  .copy-modal-hint { font-size: 13px; color: var(--text-secondary); text-align: center; margin-bottom: 14px; }
+  .copy-text-area {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    font-size: 14.5px;
+    line-height: 1.6;
+    resize: none;
+    min-height: 100px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--bg);
+  }
+  .copy-modal-btn {
+    width: 100%; margin-top: 14px;
+    padding: 12px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .copy-modal-close {
+    width: 100%; margin-top: 8px;
+    padding: 12px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-icon">💬</div>
+    <div class="header-title">HR智能问答</div>
+    <div class="header-sub" id="entryCount"></div>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" id="searchInput" placeholder="直接输入你的问题，比如：请了3天病假工资怎么算？" autocomplete="off">
+  </div>
+  <div class="examples" id="examples">
+    <div class="example-chip" onclick="quickAsk('请了3天病假工资怎么算')">病假3天工资怎么算</div>
+    <div class="example-chip" onclick="quickAsk('周末加班8小时多少钱')">周末加班8小时</div>
+    <div class="example-chip" onclick="quickAsk('工龄8年有多少天年假')">工龄8年年假</div>
+    <div class="example-chip" onclick="quickAsk('社保公积金扣多少')">社保公积金比例</div>
+    <div class="example-chip" onclick="quickAsk('工资什么时候发')">什么时候发工资</div>
+    <div class="example-chip" onclick="quickAsk('忘记打卡了怎么办')">忘记打卡</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="smart" onclick="switchTab('smart')">智能问答</button>
+  <button class="tab-btn" data-tab="browse" onclick="switchTab('browse')">浏览全部</button>
+</div>
+
+<div class="content">
+  <div id="smartArea">
+    <div class="categories" id="categories"></div>
+    <div id="thinkingBox"></div>
+    <div id="smartAnswer"></div>
+    <div id="smartResults"></div>
+  </div>
+  <div id="browseArea" style="display:none">
+    <div class="categories" id="browseCategories"></div>
+    <div id="browseList" class="qa-list"></div>
+  </div>
+  <div class="empty" id="emptyState" style="display:none">
+    <div class="empty-icon">💡</div>
+    <div>输入问题试试，比如：加班费怎么算、请病假要什么证明、社保断缴了怎么办…</div>
+  </div>
+</div>
+
+<div class="toast" id="toast">已复制</div>
+
+<div class="modal-overlay" id="copyModal">
+  <div class="copy-modal">
+    <div class="copy-modal-title">长按文字复制</div>
+    <div class="copy-modal-hint">如果一键复制不成功，可长按下方文字手动复制</div>
+    <textarea class="copy-text-area" id="copyTextArea" readonly></textarea>
+    <button class="copy-modal-btn" onclick="manualCopy()">选择全部文字</button>
+    <button class="copy-modal-close" onclick="closeCopyModal()">关闭</button>
+  </div>
+</div>
+
+<script>
+// ===== FAQ 数据 =====
+const FAQ_DATA = [
+  {
+    id: 'd1', category: '考勤打卡',
+    question: "忘记打卡了怎么办？",
+    answer: "你好，忘记打卡请在当天内联系直属主管在考勤系统中补签（每月3次补卡机会）。\n补签流程：登录正大超人→ HR→ 考勤管理(我的异常) → 点击缺卡日期→ 异常处理→ 选择（上/下班未刷卡）→ 补卡→ 填写漏卡日期和原因 → 提交审批。\n\n《员工考勤管理办法》规定：\n    出现考勤异常的，系统每日进行异常情况提醒，员工本人应及时更正、确认当月考勤。工资结算前未确认的，视为认可最终考勤结果。\n5.2 下列考勤异常可以更正：\n5.2.1 因公迟到、早退；\n5.2.2 因公出、请休假未参加考勤；\n5.2.3 因不可预测或抗拒原因造成的迟到、旷工（应写明具体情况并附官方发布信息，于当日最迟于次日在系统内提交）；\n5.2.4 因考勤设备故障或指纹本身原因考勤设备无法识读（必须于当日通知部门主管）；\n5.2.5 其他异常经员工部门主管审批可以更正的情况。",
+    tags: ['补卡', '漏卡', '补签', '打卡']
+  },
+  {
+    id: 'd3', category: '考勤打卡',
+    question: "外勤打卡怎么操作？",
+    answer: "外勤打卡操作步骤：\n1. 打开正大超人APP\n2. 点击「移动打卡」\n3. 系统自动定位当前位置，确认地址无误\n4. 需添加现场照片（部分情况需要）\n5. 填写外勤事由\n6. 点击提交即可\n\n注意：只有销售或非固定办公地点人员才能使用移动打卡。",
+    tags: ['外勤', '出差', '打卡']
+  },
+  {
+    id: 'd5', category: '考勤打卡',
+    question: "考勤异常怎么申诉？",
+    answer: "考勤异常申诉流程：\n1. 登录正大超人→ 考勤管理→ 我的异常\n2. 选择异常日期和异常类型（漏卡/迟到/早退/旷工等）\n3. 填写申诉原因，上传相关证明（如交通延误证明、出差审批等）\n4. 提交直属主管审批\n5. 审批通过后考勤自动修正\n\n申诉时限：考勤异常发生之日起5个工作日内提交，逾期不再受理。",
+    tags: ['申诉', '考勤异常', '漏卡']
+  },
+  {
+    id: 'd6', category: '工资薪酬',
+    question: "工资什么时候发？",
+    answer: "每月20日发放上月工资（遇节假日提前至最近工作日）。\n\n工资条查看方式：\n方式1.登录正大超人 → HR→ 人员管理（工资条） → 接收验证码 → 选择对应月份即可查看明细。\n方式2.登录预留在入职信息的个人邮箱直接查看\n\n如有疑问，请在收到工资后3个工作日内联系HR核实。",
+    tags: ['发工资', '工资条', '发薪日']
+  },
+  {
+    id: 'd7', category: '工资薪酬',
+    question: "工资条怎么看？各项目含义",
+    answer: "工资条主要项目说明：\n• 基本工资：合同约定的固定工资\n• 岗位津贴：根据岗位级别发放的补贴\n• 绩效奖金：根据月度/季度考核结果发放\n• 加班费：平时1.5倍、周末2倍、法定节假日3倍\n• 扣款：迟到/早退等考勤扣款\n• 社保公积金个人部分：按规定代扣代缴\n• 个人所得税：按国家税法计算扣除\n\n实发工资 = 应发工资 - 社保公积金个人部分 - 个人所得税 - 其他扣款",
+    tags: ['工资条', '工资明细', '扣款']
+  },
+  {
+    id: 'd8', category: '工资薪酬',
+    question: "加班费怎么计算？",
+    answer: "加班费计算标准：\n• 工作日加班：时薪 × 1.5倍 × 加班时长\n• 周末加班：时薪 × 2.0倍 × 加班时长\n• 法定节假日加班：时薪 × 3.0倍 × 加班时长\n\n时薪 = 月基本工资 ÷ 21.75天 ÷ 8小时\n\n注意：公司指派的加班需提前在正大超人提交加班申请并审批通过，未审批的加班不计加班。加班后同时安排调休，已调休的时数不能计发加班费。",
+    tags: ['加班费', '加班', '计算']
+  },
+  {
+    id: 'd9', category: '工资薪酬',
+    question: "个税怎么算？起征点是多少？",
+    answer: "个人所得税计算方式：\n\n应纳税所得额 = 税前工资 - 五险一金个人部分 - 5000元（起征点）- 专项附加扣除\n\n税率表（累计预扣）：\n• 不超过36000元：3%\n• 36000-144000元：10%\n• 144000-300000元：20%\n• 300000-420000元：25%\n• 更高档位依次递增\n\n专项附加扣除包括：子女教育、继续教育、大病医疗、住房贷款利息/住房租金、赡养老人、婴幼儿照护等。可在「个人所得税APP」中填报。",
+    tags: ['个税', '税率', '起征点', '专项附加扣除']
+  },
+  {
+    id: 'd10', category: '请假休假',
+    question: "请假流程怎么走？",
+    answer: "请假申请流程：\n1. 登录正大超人 → HR →请假申请\n2. 选择请假类型（事假/病假/年假/婚假等）\n3. 填写请假起止时间、时长和事由\n4. 病假、丧假需上传相关证明（如病假：二甲以上医院开具的诊断证明、挂号单、缴费凭证、病历等；如丧假：同时提供关系证明和死亡证明）。\n5. 提交审批流程-催办上级。\n6. 审批通过后生效",
+    tags: ['请假', '流程', '事假', '病假']
+  },
+  {
+    id: 'd11', category: '请假休假',
+    question: "年假有几天？怎么休？",
+    answer: "年假天数标准（按累计工作年限计算）：\n• 工龄满1年不满10年：5天/年\n• 工龄满10年不满20年：10天/年\n• 工龄满20年以上：15天/年\n\n注意事项：\n1. 年假可分次休，最短半天。\n2. 建议在正大超人提前3个工作日提交年假申请。\n3. 当年年假当年休完，逾期清空。\n4. 离职时已休年假>当前可用年假的，按逾日工资折算扣回。",
+    tags: ['年假', '年休假', '假期']
+  },
+  {
+    id: 'd12', category: '请假休假',
+    question: "病假怎么扣工资？",
+    answer: "病假工资计算规则：\n• 1天以下病假不扣钱\n• 1天及以上病假-少于等于30天病假工资=个人工资的80%*病假天数\n• 大于30天病假-少于等于3个月病假工资=个人工资的60%*病假天数\n• 大于3个月病假-少于等于6个月病假工资=个人工资的30%*病假天数\n• 大于6个月病假-少于等于12个月病假工资=当地最低工资标准*病假天数\n• 大于12个月病假=当地最低工资标准*80%*病假天数\n• 病假需提供医院开具的诊断证明和病假条\n\n注意：\n1. 急诊可先口头通知主管，事后3天内补病假申请流程\n2. 病假期间不扣除年假\n3. 弄虚作假按旷工处理并追究责任",
+    tags: ['病假', '扣工资', '医院证明']
+  },
+  {
+    id: 'd13', category: '社保公积金',
+    question: "社保公积金扣多少？缴费比例",
+    answer: "社保公积金个人缴费比例（以工资基数为基数）：\n\n社保个人部分：\n• 养老保险：8%\n• 医疗保险：2%\n• 失业保险：0.5%\n• 工伤保险：0%（企业缴纳）\n• 生育保险：0%（企业缴纳）\n\n公积金个人部分：\n• 住房公积金：7%（另有补充公积金视公司政策）\n\n合计个人扣除比例约：17.5%\n\n注：缴费基数每年7月调整一次，以上年度月平均工资为准（设有上下限）。",
+    tags: ['社保', '公积金', '缴费比例', '五险一金']
+  },
+  {
+    id: 'd14', category: '社保公积金',
+    question: "社保断缴了怎么办？能补缴吗？",
+    answer: "社保断缴处理方式：\n1. 因离职导致的断缴：新入职后由新公司正常缴纳，断缴期间可协商补缴（需双方同意）\n2. 因公司原因漏缴：联系HR办理补缴，公司承担滞纳金\n3. 断缴影响：\n   - 医保断缴次月不能报销（补缴后恢复）\n   - 养老保险累计计算，断缴影响累计年限\n   - 购房/购车/落户资格可能受连续缴纳月数影响\n\n建议：离职前确认社保衔接，避免断缴。",
+    tags: ['社保断缴', '补缴', '社保']
+  },
+  {
+    id: 'd15', category: '其他',
+    question: "怎么修改个人基本信息？",
+    answer: "修改个人信息流程：\n1. 登录正大超人 → HR  → 人员管理（个人信息修改）\n2. 可修改：联系方式、紧急联系人、住址、生育状态、银行卡信息等\n3. 修改后点击「保存」即可生效\n\n如需修改以下信息，需联系HR提交纸质变更单：\n• 姓名（需提供身份证变更证明）\n• 身份证号\n• 银行卡号（需提供新卡复印件）\n• 学历信息（需提供学历证书）",
+    tags: ['个人信息', '修改', '资料']
+  }
+];
+
+// ===== 推理规则引擎 =====
+// 每条规则包含：触发词、参数提取、分档计算、公式模板、推理步骤生成
+const REASONING_RULES = [
+
+  // === 病假工资计算 ===
+  {
+    id: 'sick_leave_calc',
+    name: '病假工资计算',
+    category: '请假休假',
+    triggers: ['病假', '病假工资', '病假扣', '病假怎么算', '生病请假', '病假几天', '病假扣多少', '病假扣钱', '看病请假', '请病假'],
+    intent: 'calculation',
+    extractParams: function(query) {
+      // 提取天数
+      var dayMatch = query.match(/(\d+(?:\.\d+)?)\s*天/);
+      if (dayMatch) return { days: parseFloat(dayMatch[1]) };
+      // 提取月数
+      var monthMatch = query.match(/(\d+(?:\.\d+)?)\s*个?月/);
+      if (monthMatch) return { days: parseFloat(monthMatch[1]) * 30 };
+      return { days: null };
+    },
+    compute: function(params) {
+      if (params.days === null || params.days === undefined) return null;
+      var d = params.days;
+      var tier, coefficient, formula, rateText;
+
+      if (d < 1) {
+        return {
+          tier: '1天以下',
+          coefficient: null,
+          formula: null,
+          steps: [
+            '识别问题类型：病假工资计算',
+            '提取参数：病假天数 = ' + d + '天',
+            '匹配规则：病假1天以下不扣钱',
+            '结论：不扣除工资'
+          ],
+          answer: '根据病假工资计算规则，病假' + d + '天不足1天，不扣除工资。',
+          faqLinks: ['d12', 'd10']
+        };
+      } else if (d <= 30) {
+        tier = '1天~30天';
+        coefficient = 0.8;
+        rateText = '80%';
+      } else if (d <= 90) {
+        tier = '30天~3个月';
+        coefficient = 0.6;
+        rateText = '60%';
+      } else if (d <= 180) {
+        tier = '3~6个月';
+        coefficient = 0.3;
+        rateText = '30%';
+      } else if (d <= 365) {
+        tier = '6~12个月';
+        coefficient = null;
+        rateText = '当地最低工资标准';
+      } else {
+        tier = '12个月以上';
+        coefficient = null;
+        rateText = '当地最低工资标准×80%';
+      }
+
+      // 构建公式
+      if (coefficient !== null) {
+        formula = '个人基本工资 ÷ 应出勤天数 × ' + coefficient + ' × ' + d + '天';
+      } else if (d <= 365) {
+        formula = '当地最低工资标准 × ' + d + '天';
+      } else {
+        formula = '当地最低工资标准 × 80% × ' + d + '天';
+      }
+
+      var steps = [
+        '识别问题类型：病假工资计算',
+        '提取参数：病假天数 = ' + d + '天',
+        '匹配规则：' + tier + '档，发放比例 = ' + rateText,
+        '应用公式：' + formula
+      ];
+
+      var answer = '请假' + d + '天属于"' + tier + '"档，病假工资发放比例为' + rateText + '。\n\n';
+      answer += '计算公式：\n' + formula + '\n\n';
+      answer += '说明：病假期间按个人基本工资的' + rateText + '发放，' + d + '天共计按' + rateText + '标准计算。\n\n';
+      answer += '注意：\n1. 病假需提供二甲以上医院诊断证明+挂号单+缴费凭证+病历\n2. 急诊可先口头通知主管，事后3天内补流程\n3. 病假期间不扣除年假';
+
+      return {
+        tier: tier,
+        coefficient: coefficient,
+        formula: formula,
+        steps: steps,
+        answer: answer,
+        faqLinks: ['d12', 'd10']
+      };
+    }
+  },
+
+  // === 加班费计算 ===
+  {
+    id: 'overtime_calc',
+    name: '加班费计算',
+    category: '工资薪酬',
+    triggers: ['加班费', '加班工资', '加班怎么算', '加班计算', '加班多少钱', '周末加班', '节假日加班', '加班费计算', '平时加班', '工作日加班'],
+    intent: 'calculation',
+    extractParams: function(query) {
+      var hoursMatch = query.match(/(\d+(?:\.\d+)?)\s*小时/);
+      var daysMatch = query.match(/(\d+(?:\.\d+)?)\s*天/);
+      var hours = null;
+      if (hoursMatch) hours = parseFloat(hoursMatch[1]);
+      else if (daysMatch) hours = parseFloat(daysMatch[1]) * 8;
+
+      // 检测加班类型
+      var type = 'weekday';
+      var typeLabel = '工作日加班';
+      if (/周末|休息日|双休|星期六|星期日|周六|周日/.test(query)) {
+        type = 'weekend';
+        typeLabel = '周末加班';
+      } else if (/法定|节假日|国庆|春节|五一|元旦|清明|端午|中秋/.test(query)) {
+        type = 'holiday';
+        typeLabel = '法定节假日加班';
+      }
+
+      return { hours: hours, type: type, typeLabel: typeLabel };
+    },
+    compute: function(params) {
+      if (params.hours === null || params.hours === undefined) return null;
+
+      var multipliers = { weekday: 1.5, weekend: 2.0, holiday: 3.0 };
+      var multiplier = multipliers[params.type] || 1.5;
+
+      var formula = '时薪 × ' + multiplier + ' × ' + params.hours + '小时';
+      var hourlyFormula = '时薪 = 月基本工资 ÷ 21.75天 ÷ 8小时';
+
+      var steps = [
+        '识别问题类型：加班费计算',
+        '提取参数：加班类型 = ' + params.typeLabel + '，加班时长 = ' + params.hours + '小时',
+        '匹配规则：' + params.typeLabel + '倍率 = ' + multiplier + '倍',
+        '计算时薪：' + hourlyFormula,
+        '应用公式：' + formula
+      ];
+
+      var answer = params.typeLabel + ' ' + params.hours + ' 小时的加班费计算：\n\n';
+      answer += '时薪公式：\n' + hourlyFormula + '\n\n';
+      answer += '加班费公式：\n' + formula + '\n\n';
+      answer += '说明：' + params.typeLabel + '按基本工资的' + multiplier + '倍计算，' + params.hours + '小时共计' + multiplier + '倍×' + params.hours + '小时。\n\n';
+      answer += '注意：\n1. 需提前在正大超人提交加班申请并审批通过\n2. 加班后如安排调休，已调休时数不计发加班费';
+
+      return {
+        multiplier: multiplier,
+        formula: formula,
+        hourlyFormula: hourlyFormula,
+        steps: steps,
+        answer: answer,
+        faqLinks: ['d8']
+      };
+    }
+  },
+
+  // === 年假天数查询 ===
+  {
+    id: 'annual_leave_calc',
+    name: '年假天数查询',
+    category: '请假休假',
+    triggers: ['年假', '年休假', '带薪假', '年假几天', '有多少天假', '休年假', '年假多少', '年假天数', '有几天年假'],
+    intent: 'eligibility',
+    extractParams: function(query) {
+      var yearMatch = query.match(/(\d+)\s*年/);
+      if (yearMatch) return { workYears: parseInt(yearMatch[1]) };
+      // 尝试提取"工龄X"
+      var glMatch = query.match(/工龄\s*(\d+)/);
+      if (glMatch) return { workYears: parseInt(glMatch[1]) };
+      return { workYears: null };
+    },
+    compute: function(params) {
+      if (params.workYears === null || params.workYears === undefined) return null;
+      var y = params.workYears;
+      var tier, days;
+
+      if (y < 1) {
+        return {
+          tier: '不满1年',
+          days: 0,
+          steps: [
+            '识别问题类型：年假天数查询',
+            '提取参数：工龄 = ' + y + '年',
+            '匹配规则：工作不满1年不享受年假',
+            '结论：0天年假'
+          ],
+          answer: '根据年假规定，工作不满1年不享受年假。',
+          faqLinks: ['d11']
+        };
+      } else if (y < 10) {
+        tier = '满1年不满10年';
+        days = 5;
+      } else if (y < 20) {
+        tier = '满10年不满20年';
+        days = 10;
+      } else {
+        tier = '满20年以上';
+        days = 15;
+      }
+
+      var formula = '年假 = ' + days + '天/年';
+
+      var steps = [
+        '识别问题类型：年假天数查询',
+        '提取参数：工龄 = ' + y + '年',
+        '匹配规则：' + tier + '，对应年假' + days + '天/年',
+        '结论：' + formula
+      ];
+
+      var answer = '工龄' + y + '年属于"' + tier + '"档，年假天数为 ' + days + ' 天/年。\n\n';
+      answer += '注意事项：\n1. 年假可分次休，最短半天\n2. 建议提前3个工作日在正大超人提交申请\n3. 当年年假当年休完，逾期清空\n4. 离职时已休年假>当前可用年假的，按逾日工资折算扣回';
+
+      return {
+        tier: tier,
+        days: days,
+        formula: formula,
+        steps: steps,
+        answer: answer,
+        faqLinks: ['d11']
+      };
+    }
+  },
+
+  // === 社保公积金计算 ===
+  {
+    id: 'social_insurance_calc',
+    name: '社保公积金计算',
+    category: '社保公积金',
+    triggers: ['社保扣', '公积金扣', '五险一金扣', '社保多少', '公积金多少', '社保比例', '公积金比例', '缴费比例', '社保公积金', '扣多少社保'],
+    intent: 'calculation',
+    extractParams: function(query) {
+      // 尝试提取工资基数
+      var salaryMatch = query.match(/(\d+)\s*[元块]/);
+      return { salary: salaryMatch ? parseInt(salaryMatch[1]) : null };
+    },
+    compute: function(params) {
+      var items = [
+        { name: '养老保险', rate: 0.08 },
+        { name: '医疗保险', rate: 0.02 },
+        { name: '失业保险', rate: 0.005 },
+        { name: '住房公积金', rate: 0.07 }
+      ];
+      var totalRate = 0.175;
+
+      var steps = [
+        '识别问题类型：社保公积金缴费计算',
+        '匹配规则：个人缴费比例合计约17.5%',
+        '明细：养老8% + 医疗2% + 失业0.5% + 公积金7%',
+        '应用公式：扣款金额 = 缴费基数 × 17.5%'
+      ];
+
+      var answer = '社保公积金个人缴费比例：\n\n';
+      answer += '社保个人部分（合计约10.5%）：\n';
+      items.slice(0, 3).forEach(function(item) {
+        answer += '• ' + item.name + '：' + (item.rate * 100) + '%\n';
+      });
+      answer += '\n公积金个人部分：\n';
+      answer += '• 住房公积金：7%\n\n';
+      answer += '合计个人扣除比例约：17.5%\n\n';
+
+      if (params.salary) {
+        var deduction = Math.round(params.salary * totalRate);
+        answer += '按工资基数' + params.salary + '元计算：\n';
+        answer += '个人每月扣除 ≈ ' + params.salary + ' × 17.5% = ' + deduction + '元\n\n';
+        steps.push('按工资基数' + params.salary + '元计算：' + params.salary + ' × 17.5% = ' + deduction + '元');
+        answer = answer.replace('应用公式：扣款金额 = 缴费基数 × 17.5%', '应用公式：' + params.salary + ' × 17.5% = ' + deduction + '元');
+      } else {
+        answer += '计算公式：\n扣款金额 = 缴费基数 × 17.5%\n\n';
+      }
+
+      answer += '注：缴费基数每年7月调整，以上年度月平均工资为准。';
+
+      return {
+        totalRate: totalRate,
+        formula: params.salary ? params.salary + ' × 17.5% = ' + Math.round(params.salary * totalRate) + '元' : '缴费基数 × 17.5%',
+        steps: steps,
+        answer: answer,
+        faqLinks: ['d13']
+      };
+    }
+  },
+
+  // === 个税计算 ===
+  {
+    id: 'tax_calc',
+    name: '个税计算',
+    category: '工资薪酬',
+    triggers: ['个税', '个人所得税', '交税', '扣税', '税怎么算', '税率', '起征点', '专项扣除', '专项附加'],
+    intent: 'calculation',
+    extractParams: function(query) {
+      var salaryMatch = query.match(/(\d+)\s*[元块]/);
+      return { salary: salaryMatch ? parseInt(salaryMatch[1]) : null };
+    },
+    compute: function(params) {
+      var steps = [
+        '识别问题类型：个人所得税计算',
+        '匹配规则：起征点5000元/月，采用累计预扣法',
+        '计算公式：应纳税所得额 = 税前工资 - 五险一金 - 5000 - 专项附加扣除',
+        '适用税率：根据累计应纳税所得额分档（3%~25%+）'
+      ];
+
+      var answer = '个人所得税计算方式：\n\n';
+      answer += '计算公式：\n应纳税所得额 = 税前工资 - 五险一金个人部分 - 5000元（起征点）- 专项附加扣除\n\n';
+      answer += '税率表（累计预扣法）：\n';
+      answer += '• 不超过36,000元：3%\n';
+      answer += '• 36,000~144,000元：10%\n';
+      answer += '• 144,000~300,000元：20%\n';
+      answer += '• 300,000~420,000元：25%\n';
+      answer += '• 更高档位依次递增\n\n';
+
+      if (params.salary) {
+        var taxable = Math.max(0, params.salary - params.salary * 0.175 - 5000);
+        var tax;
+        var rate;
+        if (taxable <= 36000) { rate = 0.03; tax = taxable * rate; }
+        else if (taxable <= 144000) { rate = 0.10; tax = taxable * rate - 2520; }
+        else if (taxable <= 300000) { rate = 0.20; tax = taxable * rate - 16920; }
+        else { rate = 0.25; tax = taxable * rate - 31920; }
+        tax = Math.max(0, Math.round(tax));
+        answer += '按税前' + params.salary + '元估算（假设五险一金约17.5%、无专项附加扣除）：\n';
+        answer += '应纳税所得额 = ' + params.salary + ' - ' + Math.round(params.salary * 0.175) + ' - 5000 = ' + Math.round(taxable) + '元\n';
+        answer += '适用税率：' + (rate * 100) + '%\n';
+        answer += '预估个税 ≈ ' + tax + '元\n\n';
+        steps.push('按税前' + params.salary + '元估算：应纳税所得额 ≈ ' + Math.round(taxable) + '元，税率' + (rate * 100) + '%，个税 ≈ ' + tax + '元');
+      }
+
+      answer += '专项附加扣除：子女教育、继续教育、大病医疗、住房贷款利息/租金、赡养老人、婴幼儿照护。\n可在「个人所得税APP」中填报。';
+
+      return {
+        formula: '应纳税所得额 = 税前工资 - 五险一金 - 5000 - 专项附加扣除',
+        steps: steps,
+        answer: answer,
+        faqLinks: ['d9']
+      };
+    }
+  }
+];
+
+// ===== 知识库规则（非计算类，关键词匹配） =====
+const KB_RULES = [
+  { id: 'r1', category: '考勤打卡', triggers: ['补卡','漏打卡','忘打卡','没打卡','打卡忘了','忘记打卡','补签','打卡失败'], answer: '忘记打卡当月有3次补卡机会，请在当天内处理。\n操作：正大超人 → HR → 考勤管理(我的异常) → 点击缺卡日期 → 异常处理 → 补卡 → 提交审批。', faqLinks: ['d1'] },
+  { id: 'r2', category: '考勤打卡', triggers: ['外勤','出差打卡','移动打卡','外面打卡','远程打卡'], answer: '打开正大超人APP → 移动打卡 → 系统自动定位 → 填写外勤事由 → 提交。\n注意：只有销售或非固定办公地点人员可使用移动打卡。', faqLinks: ['d3'] },
+  { id: 'r3', category: '考勤打卡', triggers: ['申诉','考勤异常','迟到异常','异常处理','考勤有问题','考勤不对'], answer: '考勤异常需在5个工作日内申诉。\n路径：正大超人 → 考勤管理 → 我的异常 → 选择异常类型 → 填写原因+上传证明 → 主管审批。', faqLinks: ['d1','d5'] },
+  { id: 'r4', category: '考勤打卡', triggers: ['迟到','早退','旷工','考勤扣钱'], answer: '迟到/早退/旷工等考勤异常会影响工资扣款。如属因公情况可在系统内申诉更正，需在5个工作日内提交。\n工资结算前未确认考勤异常的，视为认可最终考勤结果。', faqLinks: ['d1','d5','d7'] },
+  { id: 'r5', category: '工资薪酬', triggers: ['发工资','发薪','工资几号','什么时候发工资','工资日','工资发放'], answer: '每月20日发放上月工资，遇节假日提前至最近工作日。\n工资条查看：正大超人 → HR → 人员管理(工资条)，或查看入职时预留的个人邮箱。\n如有疑问，请在收到工资后3个工作日内联系HR核实。', faqLinks: ['d6'] },
+  { id: 'r6', category: '工资薪酬', triggers: ['工资条','工资明细','工资项目','工资看不懂','工资组成','工资结构','应发','实发'], answer: '工资条主要项目：\n• 基本工资 + 岗位津贴 + 绩效奖金 + 加班费\n• 减去：社保公积金个人部分(约17.5%) + 个税 + 其他扣款\n= 实发工资', faqLinks: ['d7'] },
+  { id: 'r9', category: '请假休假', triggers: ['请假','怎么请假','请假流程','请假申请','请年假','请事假','请假怎么走'], answer: '请假流程：\n1. 正大超人 → HR → 请假申请\n2. 选择类型(事假/病假/年假/婚假等)\n3. 填写起止时间和事由\n4. 上传证明(病假/丧假需要)\n5. 提交审批 → 催办上级\n6. 审批通过后生效', faqLinks: ['d10'] },
+  { id: 'r12', category: '请假休假', triggers: ['离职','年假结算','辞职年假','年假折算','多休','年假退回'], answer: '离职时年假处理：\n• 已休年假 <= 当前可用年假：不扣款\n• 已休年假 > 当前可用年假：超出部分按逾日工资折算扣回', faqLinks: ['d11'] },
+  { id: 'r13', category: '请假休假', triggers: ['病假证明','医院证明','诊断证明','请假要什么材料','病假条','挂号单','病历'], answer: '病假证明材料（缺一不可）：\n• 二甲以上医院开具的诊断证明\n• 挂号单\n• 缴费凭证\n• 病历\n\n丧假需提供：关系证明 + 死亡证明。\n弄虚作假按旷工处理并追究责任。', faqLinks: ['d10','d12'] },
+  { id: 'r15', category: '社保公积金', triggers: ['断缴','社保断','社保补缴','社保停了','停缴','社保断了','医保断','公积金断缴'], answer: '离职断缴：新入职后由新公司正常缴纳，断缴期间可协商补缴(双方同意)。\n公司漏缴：联系HR补缴，公司承担滞纳金。\n\n断缴影响：医保次月不能报销(补缴后恢复)、养老保险累计受影响、购房/购车/落户资格可能受影响。', faqLinks: ['d14'] },
+  { id: 'r16', category: '其他', triggers: ['改信息','修改信息','个人信息','换手机号','改地址','改银行卡','改名字','改名','学历变更'], answer: '在线可修改：联系方式、紧急联系人、住址、生育状态、银行卡信息。\n路径：正大超人 → HR → 人员管理(个人信息修改)，保存即生效。\n\n需纸质变更单：姓名(需身份证变更证明)、身份证号、银行卡号(需新卡复印件)、学历(需学历证书)。', faqLinks: ['d15'] },
+  { id: 'r17', category: '通用', triggers: ['正大超人','系统','APP','在哪里操作','哪里查','哪里看','怎么查','在哪看'], answer: '公司HR系统为「正大超人」，可通过APP或PC端登录。\n常用路径：登录 → HR → 对应菜单（考勤管理/请假申请/工资条/个人信息修改等）。', faqLinks: ['d1','d6','d10'] },
+  { id: 'r18', category: '通用', triggers: ['多久','几天','多长时间','时效','期限','截止','deadline','什么时候'], answer: '关键时效速查：\n• 补卡：当天内（每月最多3次）\n• 考勤申诉：5个工作日内\n• 工资疑问：收到工资后3个工作日内\n• 急诊补假条：3天内\n• 年假：当年休完，逾期清空', faqLinks: ['d1','d5','d6','d10','d11'] },
+  { id: 'r19', category: '考勤打卡', triggers: ['调休','换休','补休','加班调休','换班'], answer: '加班后如安排调休，已调休的时数不能计发加班费。\n加班和调休不能重复计算，两者选其一。', faqLinks: ['d8'] }
+];
+
+const CATEGORIES = ['考勤打卡', '工资薪酬', '请假休假', '社保公积金', '其他'];
+const CAT_ICONS = { '考勤打卡': '🕐', '工资薪酬': '💰', '请假休假': '📅', '社保公积金': '🏥', '其他': '📌' };
+
+let currentTab = 'smart';
+let currentCategory = '__all__';
+let searchKeyword = '';
+let activeCardId = null;
+let thinkingTimer = null;
+
+// ===== 推理引擎 =====
+function reasonEngine(query) {
+  var q = query.toLowerCase().trim();
+  if (!q) return { reasoning: null, smartAnswer: null, results: [] };
+
+  // 第1步：尝试推理规则（计算类）
+  for (var i = 0; i < REASONING_RULES.length; i++) {
+    var rule = REASONING_RULES[i];
+    var matched = false;
+    for (var j = 0; j < rule.triggers.length; j++) {
+      if (q.includes(rule.triggers[j].toLowerCase())) {
+        matched = true;
+        break;
+      }
+    }
+    if (matched) {
+      var params = rule.extractParams(query);
+      var result = rule.compute(params);
+      if (result) {
+        return {
+          reasoning: result,
+          ruleName: rule.name,
+          ruleCategory: rule.category,
+          smartAnswer: null,
+          results: []
+        };
+      }
+    }
+  }
+
+  // 第2步：尝试知识库规则（非计算类，关键词匹配）
+  var scored = KB_RULES.map(function(rule) {
+    var maxScore = 0;
+    for (var k = 0; k < rule.triggers.length; k++) {
+      if (q.includes(rule.triggers[k].toLowerCase())) {
+        var score = rule.triggers[k].length / q.length + 0.5;
+        if (score > maxScore) maxScore = score;
+      }
+    }
+    // 模糊匹配
+    if (maxScore === 0) {
+      var chars = q.replace(/\s/g, '').split('');
+      for (var m = 0; m < rule.triggers.length; m++) {
+        var tChars = rule.triggers[m].split('');
+        var hits = 0;
+        for (var n = 0; n < chars.length; n++) {
+          if (tChars.indexOf(chars[n]) >= 0) hits++;
+        }
+        var partial = hits / Math.max(tChars.length, 1);
+        if (partial > maxScore) maxScore = partial;
+      }
+    }
+    return { rule: rule, score: maxScore };
+  });
+
+  scored.sort(function(a, b) { return b.score - a.score; });
+  var matched = scored.filter(function(s) { return s.score > 0.3; });
+
+  if (matched.length > 0 && matched[0].score > 0.4) {
+    var relevantRules = matched.slice(0, 3);
+    var answers = relevantRules.map(function(r) { return r.rule.answer; });
+    var uniqueAnswers = [];
+    var seen = {};
+    for (var a = 0; a < answers.length; a++) {
+      if (!seen[answers[a]]) { seen[answers[a]] = true; uniqueAnswers.push(answers[a]); }
+    }
+    var mergedAnswer = uniqueAnswers.join('\n\n---\n\n');
+
+    var faqIds = {};
+    relevantRules.forEach(function(r) {
+      (r.rule.faqLinks || []).forEach(function(id) { faqIds[id] = true; });
+    });
+
+    var categories = [];
+    relevantRules.forEach(function(r) {
+      if (categories.indexOf(r.rule.category) < 0) categories.push(r.rule.category);
+    });
+
+    // 构建简单推理步骤
+    var steps = [
+      '识别问题类型：' + (categories[0] || '通用') + '咨询',
+      '匹配知识库规则：' + relevantRules.length + '条相关规则',
+      '整合答案并关联详细FAQ'
+    ];
+
+    return {
+      reasoning: { steps: steps, answer: mergedAnswer, faqLinks: Object.keys(faqIds) },
+      ruleName: '知识库匹配',
+      ruleCategory: categories[0],
+      smartAnswer: {
+        answer: mergedAnswer,
+        sources: categories
+      },
+      results: Object.keys(faqIds).map(function(id) {
+        var faq = FAQ_DATA.find(function(f) { return f.id === id; });
+        return faq ? Object.assign({}, faq, { score: 0.8 }) : null;
+      }).filter(Boolean)
+    };
+  }
+
+  // 第3步：回退到FAQ全文搜索
+  var faqResults = FAQ_DATA.filter(function(e) {
+    var haystack = (e.question + ' ' + e.answer + ' ' + (e.tags || []).join(' ')).toLowerCase();
+    var words = q.split(/\s+/);
+    return words.some(function(w) { return w.length > 0 && haystack.indexOf(w) >= 0; });
+  }).map(function(e) {
+    var s = 0;
+    var haystack = (e.question + ' ' + (e.tags || []).join(' ')).toLowerCase();
+    var words = q.split(/\s+/);
+    for (var w = 0; w < words.length; w++) {
+      if (haystack.indexOf(words[w]) >= 0) s += 0.3;
+    }
+    return Object.assign({}, e, { score: s });
+  }).sort(function(a, b) { return b.score - a.score; });
+
+  return { reasoning: null, smartAnswer: null, results: faqResults };
+}
+
+// ===== 渲染 =====
+function renderSmart(query) {
+  var q = query || searchKeyword;
+  var thinkingBox = document.getElementById('thinkingBox');
+  var container = document.getElementById('smartAnswer');
+  var resultsContainer = document.getElementById('smartResults');
+
+  // 清除之前的定时器
+  if (thinkingTimer) { clearTimeout(thinkingTimer); thinkingTimer = null; }
+
+  if (!q) {
+    thinkingBox.innerHTML = '';
+    container.innerHTML = '';
+    resultsContainer.innerHTML = '';
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('categories').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('categories').style.display = 'flex';
+
+  var result = reasonEngine(q);
+
+  // 如果有推理结果，展示思考过程
+  if (result.reasoning) {
+    var reasoning = result.reasoning;
+
+    // 先显示"思考中"
+    thinkingBox.innerHTML = '<div class="thinking-card"><div class="thinking-header">🤔 思考过程中</div><div class="think-loading">正在分析问题<span class="think-loading-dots"><span></span><span></span><span></span></span></div></div>';
+    container.innerHTML = '';
+    resultsContainer.innerHTML = '';
+
+    // 逐步显示思考步骤
+    var stepIndex = 0;
+    var stepsHtml = '<div class="thinking-card"><div class="thinking-header">🤔 思考过程</div><div class="thinking-steps" id="thinkSteps">';
+
+    function showNextStep() {
+      if (stepIndex < reasoning.steps.length) {
+        var stepsContainer = document.getElementById('thinkSteps');
+        if (!stepsContainer) {
+          thinkingBox.innerHTML = stepsHtml;
+          stepsContainer = document.getElementById('thinkSteps');
+        }
+        var step = reasoning.steps[stepIndex];
+        var stepEl = document.createElement('div');
+        stepEl.className = 'think-step';
+        stepEl.innerHTML = '<span class="think-step-num">' + (stepIndex + 1) + '</span><span>' + escapeHtml(step) + '</span>';
+        stepsContainer.appendChild(stepEl);
+        // 触发动画
+        setTimeout(function() { stepEl.classList.add('shown'); }, 10);
+        stepIndex++;
+        thinkingTimer = setTimeout(showNextStep, 500);
+      } else {
+        // 思考完成，显示答案
+        renderSmartAnswer(result, reasoning, container, resultsContainer);
+      }
+    }
+
+    // 短暂延迟后开始显示步骤
+    thinkingTimer = setTimeout(function() {
+      thinkingBox.innerHTML = stepsHtml;
+      stepIndex = 0;
+      showNextStep();
+    }, 300);
+
+  } else if (result.smartAnswer) {
+    // 知识库匹配结果（无推理步骤）
+    thinkingBox.innerHTML = '';
+    container.innerHTML = renderSmartAnswerCard(result.smartAnswer);
+    renderResults(result.results, resultsContainer, !!result.smartAnswer);
+  } else {
+    // FAQ搜索结果
+    thinkingBox.innerHTML = '';
+    container.innerHTML = '';
+    renderResults(result.results, resultsContainer, false);
+  }
+}
+
+function renderSmartAnswer(result, reasoning, container, resultsContainer) {
+  // 渲染智能回答卡片
+  var formulaHtml = '';
+  if (reasoning.formula) {
+    formulaHtml = '<div class="formula-box"><div class="formula-label">计算公式</div>' + escapeHtml(reasoning.formula) + '</div>';
+  }
+
+  var faqLinks = reasoning.faqLinks || [];
+  if (faqLinks.length === 0 && result.smartAnswer) {
+    // 从smartAnswer中获取
+  }
+
+  container.innerHTML = '<div class="smart-answer">' +
+    '<div class="smart-answer-header">' +
+      '<span class="smart-badge">AI 智能回答</span>' +
+      '<span class="smart-source">' + (CAT_ICONS[result.ruleCategory] || '') + ' ' + (result.ruleCategory || '') + '</span>' +
+    '</div>' +
+    '<div class="smart-answer-content">' + escapeHtml(reasoning.answer) + '</div>' +
+    formulaHtml +
+    '<div class="smart-answer-footer">' +
+      '<button class="copy-btn" onclick="copyReasoningAnswer(this)">复制答案</button>' +
+    '</div>' +
+  '</div>';
+
+  // 渲染关联FAQ
+  var faqIds = reasoning.faqLinks || [];
+  var results = faqIds.map(function(id) {
+    var faq = FAQ_DATA.find(function(f) { return f.id === id; });
+    return faq ? Object.assign({}, faq, { score: 1 }) : null;
+  }).filter(Boolean);
+
+  renderResults(results, resultsContainer, true);
+}
+
+function renderSmartAnswerCard(smartAnswer) {
+  return '<div class="smart-answer">' +
+    '<div class="smart-answer-header">' +
+      '<span class="smart-badge">AI 智能回答</span>' +
+      (smartAnswer.sources || []).map(function(c) {
+        return '<span class="smart-source">' + (CAT_ICONS[c] || '') + ' ' + c + '</span>';
+      }).join('') +
+    '</div>' +
+    '<div class="smart-answer-content">' + escapeHtml(smartAnswer.answer) + '</div>' +
+    '<div class="smart-answer-footer">' +
+      '<button class="copy-btn" onclick="copySmartAnswer(this)">复制</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderResults(results, container, hasSmartAnswer) {
+  if (results && results.length > 0) {
+    container.innerHTML = '<div class="section-title">' + (hasSmartAnswer ? '📋 相关详细问答' : '🔍 搜索结果') + '</div>' +
+      '<div class="qa-list">' + results.map(function(e) {
+        return '<div class="qa-card ' + (e.score > 0.5 ? 'highlight' : '') + ' ' + (activeCardId === e.id ? 'active' : '') + '" data-id="' + e.id + '">' +
+          '<div class="qa-question" onclick="toggleCard(\'' + e.id + '\')">' +
+            '<span class="qa-question-text">' + escapeHtml(e.question) + '</span>' +
+            '<span class="qa-toggle">▼</span>' +
+          '</div>' +
+          '<div class="qa-body">' +
+            '<div class="qa-answer">' + escapeHtml(e.answer) + '</div>' +
+            '<div class="qa-footer">' +
+              '<span class="qa-tag">' + (CAT_ICONS[e.category] || '') + ' ' + e.category + '</span>' +
+              (e.tags || []).slice(0, 3).map(function(t) { return '<span class="qa-tag">' + escapeHtml(t) + '</span>'; }).join('') +
+              '<span class="qa-match-score">' + Math.round(e.score * 100) + '% 相关</span>' +
+              '<button class="copy-btn" onclick="copyFaqAnswer(\'' + e.id + '\', this)">复制</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('') + '</div>';
+  } else {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><div>没有找到相关问题，试试换个说法</div></div>';
+  }
+}
+
+function renderBrowse() {
+  var data = FAQ_DATA.slice();
+  if (currentCategory !== '__all__') {
+    data = data.filter(function(e) { return e.category === currentCategory; });
+  }
+  var container = document.getElementById('browseList');
+  container.innerHTML = data.map(function(e) {
+    return '<div class="qa-card ' + (activeCardId === e.id ? 'active' : '') + '" data-id="' + e.id + '">' +
+      '<div class="qa-question" onclick="toggleCard(\'' + e.id + '\')">' +
+        '<span class="qa-question-text">' + escapeHtml(e.question) + '</span>' +
+        '<span class="qa-toggle">▼</span>' +
+      '</div>' +
+      '<div class="qa-body">' +
+        '<div class="qa-answer">' + escapeHtml(e.answer) + '</div>' +
+        '<div class="qa-footer">' +
+          '<span class="qa-tag">' + (CAT_ICONS[e.category] || '') + ' ' + e.category + '</span>' +
+          (e.tags || []).slice(0, 3).map(function(t) { return '<span class="qa-tag">' + escapeHtml(t) + '</span>'; }).join('') +
+          '<button class="copy-btn" onclick="copyFaqAnswer(\'' + e.id + '\', this)">复制</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderCategories(containerId, onChange) {
+  var container = document.getElementById(containerId);
+  var html = '<div class="cat-chip ' + (currentCategory === '__all__' ? 'active' : '') + '" onclick="' + onChange + '(\'__all__\')">全部</div>';
+  CATEGORIES.forEach(function(cat) {
+    html += '<div class="cat-chip ' + (currentCategory === cat ? 'active' : '') + '" onclick="' + onChange + '(\'' + cat + '\')">' + (CAT_ICONS[cat] || '') + ' ' + cat + '</div>';
+  });
+  container.innerHTML = html;
+}
+
+// ===== Actions =====
+function quickAsk(question) {
+  document.getElementById('searchInput').value = question;
+  searchKeyword = question;
+  if (currentTab === 'smart') {
+    renderSmart(question);
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.tab === tab); });
+  document.getElementById('smartArea').style.display = tab === 'smart' ? 'block' : 'none';
+  document.getElementById('browseArea').style.display = tab === 'browse' ? 'block' : 'none';
+  if (tab === 'smart') {
+    renderSmart(searchKeyword);
+  } else {
+    renderBrowse();
+  }
+}
+
+function selectCategory(cat) {
+  currentCategory = cat;
+  renderCategories(currentTab === 'smart' ? 'categories' : 'browseCategories', 'selectCategory');
+  if (currentTab === 'browse') {
+    renderBrowse();
+  } else {
+    renderSmart(searchKeyword);
+  }
+}
+
+function toggleCard(id) {
+  activeCardId = (activeCardId === id) ? null : id;
+  if (currentTab === 'browse') {
+    renderBrowse();
+  } else {
+    renderSmart(searchKeyword);
+  }
+}
+
+function copyReasoningAnswer(btn) {
+  var content = document.querySelector('.smart-answer-content');
+  var formula = document.querySelector('.formula-box');
+  var text = content ? content.textContent : '';
+  if (formula) text += '\n\n' + formula.textContent;
+  copyText(text, btn);
+}
+
+function copySmartAnswer(btn) {
+  var content = document.querySelector('.smart-answer-content');
+  if (!content) return;
+  copyText(content.textContent, btn);
+}
+
+function copyFaqAnswer(id, btn) {
+  var entry = FAQ_DATA.find(function(e) { return e.id === id; });
+  if (!entry) return;
+  copyText(entry.answer, btn);
+}
+
+function copyText(text, btn) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() { onCopySuccess(btn); })
+      .catch(function() { fallbackCopy(text, btn); });
+  } else {
+    fallbackCopy(text, btn);
+  }
+}
+
+function fallbackCopy(text, btn) {
+  var textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  textarea.style.fontSize = '16px';
+  document.body.appendChild(textarea);
+  textarea.select();
+  try { document.execCommand('copy'); onCopySuccess(btn); } catch(e) { showCopyModal(text); }
+  document.body.removeChild(textarea);
+}
+
+function onCopySuccess(btn) {
+  if (btn) {
+    btn.classList.add('copied');
+    btn.textContent = '已复制';
+    setTimeout(function() { btn.classList.remove('copied'); btn.textContent = '复制'; }, 1500);
+  }
+  showToast('已复制 ✓');
+}
+
+function showCopyModal(text) {
+  document.getElementById('copyTextArea').value = text;
+  document.getElementById('copyModal').classList.add('show');
+  setTimeout(function() { var ta = document.getElementById('copyTextArea'); ta.focus(); ta.select(); }, 300);
+}
+
+function closeCopyModal() { document.getElementById('copyModal').classList.remove('show'); }
+function manualCopy() {
+  var ta = document.getElementById('copyTextArea');
+  ta.focus(); ta.select();
+  try {
+    if (document.execCommand('copy')) { closeCopyModal(); showToast('已复制 ✓'); }
+    else { showToast('请长按文字手动复制'); }
+  } catch(e) { showToast('请长按文字手动复制'); }
+}
+
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.innerText = msg;
+  toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 2000);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ===== Init =====
+function init() {
+  document.getElementById('entryCount').textContent = '覆盖 ' + FAQ_DATA.length + ' 类常见问题';
+
+  renderCategories('categories', 'selectCategory');
+  renderCategories('browseCategories', 'selectCategory');
+  renderBrowse();
+
+  var debounceTimer;
+  document.getElementById('searchInput').addEventListener('input', function(e) {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function() {
+      searchKeyword = e.target.value.trim();
+      if (currentTab === 'smart') {
+        renderSmart(searchKeyword);
+      }
+    }, 300);
+  });
+
+  document.getElementById('copyModal').addEventListener('click', function(e) {
+    if (e.target === document.getElementById('copyModal')) closeCopyModal();
+  });
+}
+
+init();
+</script>
+</body>
+</html>
