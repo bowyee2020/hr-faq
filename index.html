@@ -322,6 +322,87 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 </div>
 
 <script>
+// ========== 0. GITEE CLOUD CONFIG ==========
+// 数据通过 Gitee API 存储在仓库的 data.json 文件中，实现跨设备同步
+var GITEE_CONFIG = {
+  token: '5090d162fc82cd54c8eaff54f39affcd',
+  owner: 'cozy-chung',
+  repo: 'hr-faq',
+  path: 'data.json'
+};
+var USE_CLOUD = true;
+
+// 内存缓存（云端异步读取后存入，后续读写都同步）
+var _cloudData = { chats: {}, obApplications: [] };
+var _cloudSHA = null;
+
+// --- Base64 UTF-8 helpers ---
+function _b64enc(str){ return btoa(unescape(encodeURIComponent(str))); }
+function _b64dec(b64){ return decodeURIComponent(escape(atob(b64.replace(/\s/g,'')))); }
+
+// --- Gitee API: read data.json ---
+function giteeRead(){
+  var url = 'https://gitee.com/api/v5/repos/' + GITEE_CONFIG.owner + '/' + GITEE_CONFIG.repo + '/contents/' + GITEE_CONFIG.path + '?access_token=' + GITEE_CONFIG.token;
+  return fetch(url).then(function(r){
+    if(r.status===404) return null;
+    return r.json();
+  }).then(function(data){
+    if(data && data.content){
+      _cloudSHA = data.sha;
+      var parsed = JSON.parse(_b64dec(data.content));
+      if(parsed.chats) _cloudData.chats = parsed.chats;
+      if(parsed.obApplications) _cloudData.obApplications = parsed.obApplications;
+    }
+    return _cloudData;
+  }).catch(function(e){ console.log('Cloud read failed:', e); return _cloudData; });
+}
+
+// --- Gitee API: write data.json (auto create/update, conflict retry) ---
+var _writeBusy = false;
+var _writePending = false;
+function giteeWrite(retryCount){
+  if(retryCount === undefined) retryCount = 0;
+  if(retryCount > 3){ console.log('Cloud write: max retries exceeded'); _writeBusy = false; return; }
+  if(_writeBusy){ _writePending = true; return; }
+  _writeBusy = true;
+
+  var url = 'https://gitee.com/api/v5/repos/' + GITEE_CONFIG.owner + '/' + GITEE_CONFIG.repo + '/contents/' + GITEE_CONFIG.path;
+  var body = {
+    access_token: GITEE_CONFIG.token,
+    content: _b64enc(JSON.stringify(_cloudData)),
+    message: 'update ' + new Date().toISOString().slice(0,19)
+  };
+  var method = 'PUT';
+  if(_cloudSHA){ body.sha = _cloudSHA; }
+  else { method = 'POST'; }
+
+  fetch(url, {
+    method: method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(r){
+    if(!r.ok){
+      console.log('Cloud write: HTTP '+r.status);
+      if(r.status === 409 && retryCount < 3){
+        // Conflict: re-read SHA and retry
+        return giteeRead().then(function(){
+          return giteeWrite(retryCount + 1);
+        });
+      }
+      return r.json().then(function(e){ throw e; });
+    }
+    return r.json();
+  }).then(function(result){
+    if(result && result.content && result.content.sha) _cloudSHA = result.content.sha;
+    _writeBusy = false;
+    if(_writePending){ _writePending = false; giteeWrite(0); }
+  }).catch(function(e){
+    console.log('Cloud write failed:', e);
+    _writeBusy = false;
+    if(_writePending){ _writePending = false; }
+  });
+}
+
 // ========== 1. DATA ==========
 const FAQ_DATA = [
   { id: 'd1', category: '考勤打卡', question: "忘记打卡了怎么办？", answer: "你好，忘记打卡请在当天内联系直属主管在考勤系统中补签（每月3次补卡机会）。\n补签流程：登录正大超人→ HR→ 考勤管理(我的异常) → 点击缺卡日期→ 异常处理→ 选择（上/下班未刷卡）→ 补卡→ 填写漏卡日期和原因 → 提交审批。\n\n《员工考勤管理办法》规定：\n    出现考勤异常的，系统每日进行异常情况提醒，员工本人应及时更正、确认当月考勤。工资结算前未确认的，视为认可最终考勤结果。\n5.2 下列考勤异常可以更正：\n5.2.1 因公迟到、早退；\n5.2.2 因公出、请休假未参加考勤；\n5.2.3 因不可预测或抗拒原因造成的迟到、旷工（应写明具体情况并附官方发布信息，于当日最迟于次日在系统内提交）；\n5.2.4 因考勤设备故障或指纹本身原因考勤设备无法识读（必须于当日通知部门主管）；\n5.2.5 其他异常经员工部门主管审批可以更正的情况。", tags: ['补卡','漏卡','补签','打卡'] },
@@ -616,8 +697,20 @@ document.addEventListener('keydown',function(e){ if(e.ctrlKey&&e.key==='k'){ e.p
 // ========== 4. CHAT ENGINE ==========
 const CHAT_KEY = 'hr_chat_data';
 let chatName = '';
-function getChatData(){ try{ return JSON.parse(localStorage.getItem(CHAT_KEY)||'{}'); }catch(e){ return {}; } }
-function saveChatData(d){ localStorage.setItem(CHAT_KEY,JSON.stringify(d)); }
+
+// 内存缓存优先：读缓存(同步)，写同时写缓存+Gitee+localStorage
+function getChatData(){
+  if(USE_CLOUD) return _cloudData.chats;
+  try{ return JSON.parse(localStorage.getItem(CHAT_KEY)||'{}'); }catch(e){ return {}; }
+}
+function saveChatData(d){
+  if(USE_CLOUD){
+    _cloudData.chats = d;
+    giteeWrite();
+  }
+  localStorage.setItem(CHAT_KEY, JSON.stringify(d));
+}
+
 function chatLoad(){
   if(chatName){ document.getElementById('chatInit').style.display='none'; document.getElementById('chatMain').style.display='block'; chatRender(); }
 }
@@ -656,8 +749,7 @@ function chatSend(){
   saveChatData(data);
   input.value='';
   chatRender();
-  // Auto reply hint
-  setTimeout(()=>{
+  setTimeout(function(){
     const d2=getChatData();
     d2[chatName].push({role:'system',text:'✅ 你的消息已发送。HR将在工作时间内回复（一般不超过2小时）。\n\n💡 提示：如果是紧急问题，建议直接微信/电话联系HR。',time:ts});
     saveChatData(d2);
@@ -666,6 +758,19 @@ function chatSend(){
 }
 // ========== 5. OB APPLICATION ==========
 const OB_KEY = 'hr_ob_applications';
+
+function getOBApps(){
+  if(USE_CLOUD) return _cloudData.obApplications;
+  try{ return JSON.parse(localStorage.getItem(OB_KEY)||'[]'); }catch(e){ return []; }
+}
+function saveOBApps(apps){
+  if(USE_CLOUD){
+    _cloudData.obApplications = apps;
+    giteeWrite();
+  }
+  localStorage.setItem(OB_KEY, JSON.stringify(apps));
+}
+
 function obSubmit(){
   const name=document.getElementById('obName').value.trim();
   const empId=document.getElementById('obEmpId').value.trim();
@@ -675,11 +780,10 @@ function obSubmit(){
   if(!phone) return alert('请输入手机号码');
   if(!/^1\d{10}$/.test(phone)) return alert('请输入正确的手机号码');
 
-  const apps=JSON.parse(localStorage.getItem(OB_KEY)||'[]');
+  const apps = getOBApps();
   apps.push({name,empId,phone,time:new Date().toISOString(),status:'待处理'});
-  localStorage.setItem(OB_KEY,JSON.stringify(apps));
+  saveOBApps(apps);
 
-  // Save for success page display
   sessionStorage.setItem('hr_last_ob', JSON.stringify({name, empId, phone}));
   document.getElementById('obSuccessEmpId').textContent = empId;
   document.getElementById('obForm').style.display='none';
@@ -878,7 +982,7 @@ function adminRender(sub){
     });
     container.innerHTML=html;
   } else if(sub==='ob'){
-    const apps=JSON.parse(localStorage.getItem(OB_KEY)||'[]');
+    const apps = getOBApps();
     if(apps.length===0){
       container.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>暂无OB申请</div>';
       return;
@@ -908,16 +1012,16 @@ function adminReply(name){
   adminRender('chat');
 }
 function adminCompleteOB(idx){
-  const apps=JSON.parse(localStorage.getItem(OB_KEY)||'[]');
+  const apps = getOBApps();
   apps[idx].status='已完成';
-  localStorage.setItem(OB_KEY,JSON.stringify(apps));
+  saveOBApps(apps);
   adminRender('ob');
 }
 function adminDeleteOB(idx){
   if(!confirm('确定删除这条OB申请？')) return;
-  const apps=JSON.parse(localStorage.getItem(OB_KEY)||'[]');
+  const apps = getOBApps();
   apps.splice(idx,1);
-  localStorage.setItem(OB_KEY,JSON.stringify(apps));
+  saveOBApps(apps);
   adminRender('ob');
 }
 function adminViewKPI(idx){
@@ -948,6 +1052,54 @@ function adminChangePwd(){
 }
 // ========== 8. INIT ==========
 (function(){
+  // --- Cloud data init ---
+  function initFromLocal(){
+    try{ _cloudData.chats = JSON.parse(localStorage.getItem(CHAT_KEY)||'{}'); }catch(e){ _cloudData.chats = {}; }
+    try{ _cloudData.obApplications = JSON.parse(localStorage.getItem(OB_KEY)||'[]'); }catch(e){ _cloudData.obApplications = []; }
+  }
+  function initFromCloud(){
+    if(!USE_CLOUD){ initFromLocal(); return; }
+    giteeRead().then(function(data){
+      localStorage.setItem(CHAT_KEY, JSON.stringify(data.chats || {}));
+      localStorage.setItem(OB_KEY, JSON.stringify(data.obApplications || []));
+      var adminPanel = document.getElementById('adminPanel');
+      if(adminPanel && adminPanel.style.display === 'block'){
+        var activeSub = document.querySelector('.admin-subtab.active');
+        if(activeSub) adminRender(activeSub.getAttribute('data-asub'));
+      }
+    });
+  }
+
+  initFromLocal();
+  if(USE_CLOUD) initFromCloud();
+
+  var _refreshTimer = null;
+  var _chatRefreshTimer = null;
+  document.getElementById('adminTrigger').addEventListener('click', function(){
+    if(USE_CLOUD){
+      initFromCloud();
+      _refreshTimer = setInterval(initFromCloud, 10000);
+    }
+  });
+  document.getElementById('adminCloseBtn').addEventListener('click', function(){
+    if(_refreshTimer){ clearInterval(_refreshTimer); _refreshTimer = null; }
+  });
+
+  // 员工端聊天自动刷新：每10秒拉取最新消息
+  if(USE_CLOUD){
+    _chatRefreshTimer = setInterval(function(){
+      var chatTab = document.getElementById('tab-chat');
+      if(!chatTab) return;
+      var tabContent = document.getElementById('tabContent');
+      // 只在聊天Tab激活且不是管理后台时刷新
+      if(chatTab.classList.contains('active') && document.getElementById('adminPanel').style.display !== 'block'){
+        giteeRead().then(function(){
+          if(chatName){ chatRender(); }
+        });
+      }
+    }, 10000);
+  }
+
   // --- Static buttons ---
   var el;
   el=document.getElementById('chatStartBtn'); if(el) el.addEventListener('click',chatStart);
