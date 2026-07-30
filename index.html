@@ -3,931 +3,342 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>HR智能问答</title>
+<title>HR自助服务</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--primary:#07c160;--primary-light:#e8f8ef;--primary-dark:#06ad56;--bg:#f5f6f8;--card-bg:#fff;--text:#1a1a1a;--text-secondary:#888;--text-tertiary:#bbb;--border:#ebebeb;--radius:12px;--radius-sm:8px;--danger:#e74c3c;--warning:#f39c12;--info:#3498db;--think-bg:#f0f7ff;--think-border:#4a90d9;--formula-bg:#fff8e6;--formula-border:#f0a020}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
 
-  :root {
-    --primary: #07c160;
-    --primary-light: #e8f8ef;
-    --primary-dark: #06ad56;
-    --bg: #f5f6f8;
-    --card-bg: #ffffff;
-    --text: #1a1a1a;
-    --text-secondary: #888;
-    --text-tertiary: #bbb;
-    --border: #ebebeb;
-    --radius: 12px;
-    --radius-sm: 8px;
-    --think-bg: #f0f7ff;
-    --think-border: #4a90d9;
-    --formula-bg: #fff8e6;
-    --formula-border: #f0a020;
-  }
+/* Header */
+.header{background:linear-gradient(135deg,#07c160,#06ad56);padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(7,193,96,.25)}
+.header h1{color:#fff;font-size:18px;font-weight:600;text-align:center;padding-bottom:12px}
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-  }
+/* Tab Nav */
+.tab-nav{display:flex;gap:4px;overflow-x:auto;padding:0 4px;-webkit-overflow-scrolling:touch}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{flex-shrink:0;padding:8px 16px;font-size:13px;color:rgba(255,255,255,.7);background:transparent;border:none;border-radius:10px 10px 0 0;cursor:pointer;white-space:nowrap;transition:.2s;position:relative;font-family:inherit}
+.tab-btn.active{color:#07c160;background:#fff;font-weight:600}
+.tab-btn .badge{position:absolute;top:2px;right:2px;background:var(--danger);color:#fff;font-size:10px;min-width:16px;height:16px;line-height:16px;border-radius:8px;text-align:center;padding:0 4px}
 
-  /* Header */
-  .header {
-    background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
-    padding: 20px 16px 16px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    box-shadow: 0 2px 8px rgba(7,193,96,0.25);
-  }
-  .header-top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: rgba(255,255,255,0.25);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-  }
-  .header-title { font-size: 19px; font-weight: 700; color: #fff; }
-  .header-sub { font-size: 12px; color: rgba(255,255,255,0.75); margin-left: auto; }
-  .search-wrap { position: relative; }
-  .search-input {
-    width: 100%;
-    padding: 12px 16px 12px 44px;
-    border: none;
-    border-radius: 24px;
-    font-size: 15.5px;
-    outline: none;
-    background: rgba(255,255,255,0.95);
-    -webkit-appearance: none;
-    transition: background 0.2s;
-    color: #333;
-  }
-  .search-input::placeholder { color: #999; }
-  .search-input:focus { background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,0.3); }
-  .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 17px; }
+/* Tab Content */
+.tab-content{display:none;padding:16px}
+.tab-content.active{display:block}
 
-  /* Example chips */
-  .examples {
-    display: flex;
-    gap: 8px;
-    padding: 10px 14px 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .examples::-webkit-scrollbar { display: none; }
-  .example-chip {
-    padding: 6px 12px;
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 14px;
-    font-size: 12.5px;
-    color: #fff;
-    white-space: nowrap;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: background 0.15s;
-  }
-  .example-chip:active { background: rgba(255,255,255,0.35); }
+/* ====== Q&A Tab ====== */
+.search-box{position:relative;margin-bottom:14px}
+.search-box input{width:100%;padding:12px 44px 12px 16px;border:2px solid var(--border);border-radius:var(--radius);font-size:15px;outline:none;transition:.2s;background:var(--card-bg);font-family:inherit}
+.search-box input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(7,193,96,.1)}
+.search-box .search-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--text-tertiary)}
+.quick-examples{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.quick-example{font-size:12px;padding:6px 12px;background:var(--primary-light);color:var(--primary-dark);border-radius:20px;cursor:pointer;border:none;font-family:inherit;white-space:nowrap}
 
-  /* Tabs */
-  .tabs {
-    display: flex;
-    background: var(--card-bg);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 116px;
-    z-index: 9;
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 12px 8px;
-    border: none;
-    background: transparent;
-    font-size: 14.5px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    position: relative;
-    transition: color 0.15s;
-  }
-  .tab-btn.active { color: var(--primary); font-weight: 600; }
-  .tab-btn.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 28px; height: 3px;
-    background: var(--primary);
-    border-radius: 2px;
-  }
+/* Think box */
+.think-box{background:var(--think-bg);border-left:3px solid var(--think-border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;font-size:13px;color:#555;line-height:1.8}
+.think-box .think-title{font-weight:600;color:var(--think-border);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.think-box .think-step{margin:3px 0;padding-left:8px}
 
-  /* Content */
-  .content { padding: 8px 14px 60px; }
+/* Answer box */
+.answer-box{background:var(--card-bg);border-radius:var(--radius);padding:16px;margin-bottom:12px;line-height:1.75;font-size:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.answer-box .ai-label{display:inline-block;background:var(--primary);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;margin-bottom:8px}
+.answer-box .formula{background:var(--formula-bg);border-left:3px solid var(--formula-border);border-radius:6px;padding:10px 14px;margin:8px 0;font-family:"SF Mono","Courier New",monospace;font-size:13px;color:#8B6914}
+.faq-cards{margin-top:12px}
+.faq-card{background:var(--card-bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.04);cursor:pointer;transition:.2s}
+.faq-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.faq-card .faq-q{font-size:14px;font-weight:500;margin-bottom:4px}
+.faq-card .faq-a{font-size:13px;color:var(--text-secondary);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.6}
+.faq-card .faq-cat{font-size:11px;color:var(--primary);margin-top:4px}
 
-  /* Thinking Process */
-  .thinking-card {
-    background: var(--think-bg);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin-bottom: 12px;
-    border-left: 4px solid var(--think-border);
-  }
-  .thinking-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--think-border);
-  }
-  .thinking-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .think-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    font-size: 13.5px;
-    color: #555;
-    line-height: 1.6;
-    opacity: 0;
-    transform: translateX(-8px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
-  }
-  .think-step.shown { opacity: 1; transform: translateX(0); }
-  .think-step-num {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: var(--think-border);
-    color: #fff;
-    font-size: 11px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-  .think-loading {
-    font-size: 13px;
-    color: var(--think-border);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .think-loading-dots span {
-    display: inline-block;
-    width: 4px; height: 4px;
-    border-radius: 50%;
-    background: var(--think-border);
-    animation: dotPulse 1.4s infinite;
-  }
-  .think-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-  .think-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes dotPulse {
-    0%, 60%, 100% { opacity: 0.3; }
-    30% { opacity: 1; }
-  }
+/* No results */
+.no-result{text-align:center;padding:40px 20px;color:var(--text-secondary)}
+.no-result .icon{font-size:48px;margin-bottom:12px}
 
-  /* Smart Answer */
-  .smart-answer {
-    background: linear-gradient(135deg, #e8f8ef 0%, #d4f5e3 100%);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 14px;
-    border-left: 4px solid var(--primary);
-  }
-  .smart-answer-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
-  }
-  .smart-badge {
-    background: var(--primary);
-    color: #fff;
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 500;
-  }
-  .smart-answer-content {
-    font-size: 14.5px;
-    line-height: 1.8;
-    color: #333;
-    white-space: pre-wrap;
-  }
-  .smart-answer-footer {
-    margin-top: 12px;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .smart-source {
-    font-size: 12px;
-    color: var(--text-secondary);
-    background: rgba(255,255,255,0.7);
-    padding: 3px 10px;
-    border-radius: 10px;
-  }
+/* ====== Chat Tab ====== */
+.chat-init{text-align:center;padding:20px}
+.chat-init input{width:100%;max-width:300px;padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius);font-size:15px;outline:none;text-align:center;font-family:inherit;margin-bottom:12px}
+.chat-init input:focus{border-color:var(--primary)}
+.chat-init .btn-start{padding:10px 40px;background:var(--primary);color:#fff;border:none;border-radius:20px;font-size:15px;cursor:pointer;font-family:inherit}
 
-  /* Formula Box */
-  .formula-box {
-    background: var(--formula-bg);
-    border: 1.5px solid var(--formula-border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    margin: 10px 0;
-    font-size: 14px;
-    line-height: 1.7;
-    color: #8a5a00;
-    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .formula-label {
-    font-size: 12px;
-    color: var(--formula-border);
-    font-weight: 600;
-    margin-bottom: 4px;
-    font-family: -apple-system, sans-serif;
-  }
+.chat-container{display:flex;flex-direction:column;height:calc(100vh - 180px);min-height:400px}
+.chat-messages{flex:1;overflow-y:auto;padding:0 4px}
+.chat-msg{display:flex;margin-bottom:12px}
+.chat-msg.employee{justify-content:flex-end}
+.chat-msg.hr{justify-content:flex-start}
+.chat-msg .bubble{max-width:80%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.6;word-break:break-word}
+.chat-msg.employee .bubble{background:var(--primary);color:#fff;border-bottom-right-radius:4px}
+.chat-msg.hr .bubble{background:var(--card-bg);color:var(--text);border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.chat-msg .meta{font-size:10px;color:var(--text-tertiary);margin-top:4px;text-align:right}
+.chat-msg.employee .meta{text-align:right;padding-right:4px}
+.chat-msg.hr .meta{text-align:left;padding-left:4px}
+.chat-msg .system-msg{text-align:center;font-size:12px;color:var(--text-secondary);background:rgba(0,0,0,.04);padding:6px 12px;border-radius:12px;margin:8px auto;display:inline-block}
 
-  /* Categories */
-  .categories {
-    display: flex;
-    gap: 8px;
-    padding: 0 0 12px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .categories::-webkit-scrollbar { display: none; }
-  .cat-chip {
-    padding: 6px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 16px;
-    font-size: 14px;
-    white-space: nowrap;
-    cursor: pointer;
-    background: #fff;
-    color: var(--text);
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-  .cat-chip.active {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary);
-  }
+.chat-input-box{display:flex;gap:8px;padding:10px 0;background:var(--bg);border-top:1px solid var(--border)}
+.chat-input-box textarea{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:20px;font-size:14px;outline:none;resize:none;height:40px;line-height:20px;font-family:inherit}
+.chat-input-box textarea:focus{border-color:var(--primary)}
+.chat-input-box .btn-send{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;border:none;font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.chat-notice{text-align:center;font-size:12px;color:var(--text-secondary);padding:8px;background:var(--primary-light);border-radius:var(--radius-sm);margin-top:8px}
 
-  /* Q&A */
-  .section-title {
-    font-size: 14px;
-    color: var(--text-secondary);
-    padding: 4px 2px 10px;
-    font-weight: 500;
-  }
-  .qa-list { display: flex; flex-direction: column; gap: 10px; }
-  .qa-card {
-    background: var(--card-bg);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    border: 1px solid transparent;
-  }
-  .qa-card.active { border-color: var(--primary); }
-  .qa-card.highlight { border-color: var(--primary); background: #f9fffb; }
-  .qa-question {
-    padding: 14px 16px;
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.45;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .qa-question-text { flex: 1; }
-  .qa-toggle {
-    width: 24px; height: 24px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    color: var(--text-tertiary);
-    transition: transform 0.25s;
-    flex-shrink: 0;
-  }
-  .qa-card.active .qa-toggle { transform: rotate(180deg); color: var(--primary); }
-  .qa-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-  .qa-card.active .qa-body { max-height: 1000px; }
-  .qa-answer {
-    padding: 0 16px 14px;
-    font-size: 14.5px;
-    color: #555;
-    line-height: 1.75;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .qa-footer {
-    padding: 0 16px 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .qa-tag {
-    font-size: 11.5px;
-    color: var(--text-secondary);
-    background: var(--bg);
-    padding: 3px 9px;
-    border-radius: 4px;
-  }
-  .qa-match-score {
-    font-size: 11px;
-    color: var(--primary);
-    background: var(--primary-light);
-    padding: 2px 8px;
-    border-radius: 8px;
-    margin-left: auto;
-  }
-  .copy-btn {
-    padding: 7px 16px;
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.15s;
-    min-height: 32px;
-  }
-  .copy-btn:active { transform: scale(0.96); }
-  .copy-btn.copied { background: #00b578; }
+/* ====== OB Tab ====== */
+.ob-form{background:var(--card-bg);border-radius:var(--radius);padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.ob-form .form-title{font-size:16px;font-weight:600;margin-bottom:6px}
+.ob-form .form-desc{font-size:13px;color:var(--text-secondary);margin-bottom:18px;line-height:1.6}
+.ob-form .form-group{margin-bottom:14px}
+.ob-form label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text)}
+.ob-form label .required{color:var(--danger)}
+.ob-form input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;outline:none;font-family:inherit;transition:.2s}
+.ob-form input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(7,193,96,.1)}
+.ob-form .btn-submit{width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:.2s}
+.ob-form .btn-submit:hover{background:var(--primary-dark)}
+.ob-form .btn-submit:disabled{background:#ccc;cursor:not-allowed}
+.ob-success{text-align:center;padding:30px 20px}
+.ob-success .success-icon{font-size:56px;margin-bottom:12px}
+.ob-success h3{color:var(--primary);margin-bottom:8px}
+.ob-success p{color:var(--text-secondary);line-height:1.8;font-size:14px}
 
-  /* Empty */
-  .empty { text-align: center; padding: 40px 20px; color: var(--text-tertiary); }
-  .empty-icon { font-size: 40px; margin-bottom: 8px; }
+/* ====== KPI Tab ====== */
+.kpi-form{background:var(--card-bg);border-radius:var(--radius);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.04);font-size:13px}
+.kpi-form h2{font-size:16px;text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.kpi-info{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.kpi-info .info-item{flex:1;min-width:100px}
+.kpi-info label{display:block;font-size:11px;color:var(--text-secondary);margin-bottom:3px}
+.kpi-info input, .kpi-info select{width:100%;padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;font-family:inherit}
+.kpi-info input:focus{border-color:var(--primary)}
 
-  /* Toast */
-  .toast {
-    position: fixed;
-    bottom: 30px; left: 50%;
-    transform: translateX(-50%) translateY(120px);
-    background: rgba(0,0,0,0.8);
-    color: #fff;
-    padding: 10px 24px;
-    border-radius: 22px;
-    font-size: 14px;
-    z-index: 200;
-    transition: transform 0.3s ease;
-    pointer-events: none;
-    white-space: nowrap;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+.kpi-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px}
+.kpi-table{width:100%;border-collapse:collapse;min-width:800px;font-size:11px}
+.kpi-table th{background:#f8f9fa;padding:6px 4px;border:1px solid #ddd;text-align:center;font-weight:500;position:sticky;top:0;white-space:nowrap}
+.kpi-table td{padding:4px;border:1px solid #eee;text-align:center}
+.kpi-table input, .kpi-table select, .kpi-table textarea{width:100%;border:1px solid transparent;padding:4px;font-size:11px;text-align:center;font-family:inherit;background:transparent;outline:none;border-radius:4px;min-width:60px}
+.kpi-table input:focus, .kpi-table select:focus{border-color:var(--primary);background:#fff}
+.kpi-table .rate-cell{font-weight:600;color:var(--primary)}
+.kpi-table .score-cell{color:var(--primary);font-weight:600}
+.kpi-table .total-row td{background:var(--primary-light);font-weight:600}
+.kpi-table .ref-hint{font-size:10px;color:var(--primary);cursor:pointer;text-decoration:underline}
+.kpi-summary{margin-bottom:14px}
+.kpi-summary textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;outline:none;resize:vertical;font-family:inherit;min-height:80px}
+.kpi-summary label{font-size:13px;font-weight:500;margin-bottom:6px;display:block}
+.kpi-signatures{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.kpi-signatures .sig-item{flex:1;min-width:120px}
+.kpi-signatures label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:3px}
+.kpi-signatures input{width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;font-family:inherit}
+.kpi-actions{display:flex;gap:10px;flex-wrap:wrap}
+.kpi-actions .btn{flex:1;min-width:100px;padding:10px;border:none;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;font-family:inherit;font-weight:500}
+.kpi-actions .btn-primary{background:var(--primary);color:#fff}
+.kpi-actions .btn-outline{background:#fff;color:var(--primary);border:1px solid var(--primary)}
+.kpi-actions .btn-secondary{background:#f0f0f0;color:var(--text)}
 
-  /* Modal */
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.4);
-    display: none;
-    align-items: flex-end;
-    justify-content: center;
-    z-index: 300;
-  }
-  .modal-overlay.show { display: flex; }
-  .copy-modal {
-    background: #fff;
-    border-radius: 16px 16px 0 0;
-    width: 100%;
-    max-width: 500px;
-    padding: 20px 16px 30px;
-    animation: slideUp 0.25s ease;
-  }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .copy-modal-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; text-align: center; }
-  .copy-modal-hint { font-size: 13px; color: var(--text-secondary); text-align: center; margin-bottom: 14px; }
-  .copy-text-area {
-    width: 100%;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 14px;
-    font-size: 14.5px;
-    line-height: 1.6;
-    resize: none;
-    min-height: 100px;
-    font-family: inherit;
-    color: var(--text);
-    background: var(--bg);
-  }
-  .copy-modal-btn {
-    width: 100%; margin-top: 14px;
-    padding: 12px;
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 16px;
-    cursor: pointer;
-  }
-  .copy-modal-close {
-    width: 100%; margin-top: 8px;
-    padding: 12px;
-    background: transparent;
-    color: var(--text-secondary);
-    border: none;
-    font-size: 15px;
-    cursor: pointer;
-  }
+.kpi-ref-panel{background:var(--primary-light);border-radius:var(--radius-sm);padding:12px;margin-bottom:14px;display:none}
+.kpi-ref-panel h4{font-size:13px;margin-bottom:8px;color:var(--primary-dark)}
+.kpi-ref-panel .ref-list{max-height:200px;overflow-y:auto}
+.kpi-ref-panel .ref-item{font-size:12px;padding:6px 8px;cursor:pointer;border-bottom:1px solid rgba(7,193,96,.1);display:flex;justify-content:space-between}
+.kpi-ref-panel .ref-item:hover{background:rgba(7,193,96,.1)}
+.kpi-ref-panel .ref-item .ref-name{font-weight:500}
+.kpi-ref-panel .ref-item .ref-desc{color:var(--text-secondary);font-size:11px}
+.kpi-fill-hint{font-size:11px;color:var(--text-secondary);background:#fffbe6;padding:8px 12px;border-radius:6px;margin-bottom:12px;line-height:1.6}
+
+/* ====== Admin Panel ====== */
+.admin-trigger{text-align:center;padding:20px;opacity:.4;cursor:pointer;font-size:12px;color:var(--text-secondary);transition:.2s}
+.admin-trigger:hover{opacity:.8}
+.admin-panel{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:200;overflow-y:auto}
+.admin-panel.show{display:block}
+.admin-header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.admin-header h2{font-size:16px}
+.admin-header .btn-close{background:rgba(255,255,255,.2);color:#fff;border:none;padding:6px 14px;border-radius:16px;cursor:pointer;font-size:13px;font-family:inherit}
+.admin-login{text-align:center;padding:60px 20px}
+.admin-login input{width:100%;max-width:280px;padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius);font-size:15px;outline:none;text-align:center;font-family:inherit;margin-bottom:12px}
+.admin-login .btn-login{padding:10px 40px;background:var(--primary);color:#fff;border:none;border-radius:20px;font-size:15px;cursor:pointer;font-family:inherit}
+.admin-login .error{color:var(--danger);font-size:13px;margin-top:8px}
+
+.admin-subtabs{display:flex;gap:0;background:#fff;border-bottom:1px solid var(--border);padding:0 16px}
+.admin-subtab{flex:1;padding:12px 0;text-align:center;font-size:13px;cursor:pointer;border:none;background:transparent;font-family:inherit;color:var(--text-secondary);border-bottom:2px solid transparent;transition:.2s}
+.admin-subtab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.admin-content{padding:16px}
+.admin-item{background:var(--card-bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.admin-item .admin-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.admin-item .admin-item-name{font-weight:600;font-size:14px}
+.admin-item .admin-item-time{font-size:11px;color:var(--text-secondary)}
+.admin-item .admin-item-body{font-size:13px;color:var(--text-secondary);line-height:1.6}
+.admin-item .admin-item-actions{margin-top:8px;display:flex;gap:8px}
+.admin-item .btn-sm{padding:5px 12px;font-size:12px;border:none;border-radius:14px;cursor:pointer;font-family:inherit}
+.admin-item .btn-sm.primary{background:var(--primary);color:#fff}
+.admin-item .btn-sm.outline{background:#fff;color:var(--primary);border:1px solid var(--primary)}
+.chat-reply-box{display:flex;gap:8px;margin-top:8px}
+.chat-reply-box input{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:16px;font-size:13px;outline:none;font-family:inherit}
+.chat-reply-box .btn-sm{padding:6px 16px}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-secondary)}
+.empty-state .empty-icon{font-size:48px;margin-bottom:8px}
+
+@media(min-width:640px){
+  .tab-btn{padding:10px 24px;font-size:14px}
+  .tab-content{padding:20px;max-width:700px;margin:0 auto}
+  .kpi-table{min-width:auto;font-size:12px}
+  .kpi-table input, .kpi-table select, .kpi-table textarea{font-size:12px}
+  .search-box input{font-size:16px}
+}
 </style>
 </head>
 <body>
+<header class="header">
+  <h1>HR自助服务中心</h1>
+  <nav class="tab-nav" id="tabNav">
+    <button class="tab-btn active" data-tab="qa">智能问答</button>
+    <button class="tab-btn" data-tab="chat">人工客服</button>
+    <button class="tab-btn" data-tab="ob">OB申请</button>
+    <button class="tab-btn" data-tab="kpi">KPI评分</button>
+  </nav>
+</header>
 
-<div class="header">
-  <div class="header-top">
-    <div class="logo-icon">💬</div>
-    <div class="header-title">HR智能问答</div>
-    <div class="header-sub" id="entryCount"></div>
-  </div>
-  <div class="search-wrap">
+<!-- ====== Tab: 智能问答 ====== -->
+<div class="tab-content active" id="tab-qa">
+  <div class="search-box">
+    <input type="text" id="qaSearch" placeholder="输入你的问题，如：请了3天病假工资怎么算？" autocomplete="off">
     <span class="search-icon">🔍</span>
-    <input type="text" class="search-input" id="searchInput" placeholder="直接输入你的问题，比如：请了3天病假工资怎么算？" autocomplete="off">
   </div>
-  <div class="examples" id="examples">
-    <div class="example-chip" onclick="quickAsk('请了3天病假工资怎么算')">病假3天工资怎么算</div>
-    <div class="example-chip" onclick="quickAsk('周末加班8小时多少钱')">周末加班8小时</div>
-    <div class="example-chip" onclick="quickAsk('工龄8年有多少天年假')">工龄8年年假</div>
-    <div class="example-chip" onclick="quickAsk('社保公积金扣多少')">社保公积金比例</div>
-    <div class="example-chip" onclick="quickAsk('工资什么时候发')">什么时候发工资</div>
-    <div class="example-chip" onclick="quickAsk('忘记打卡了怎么办')">忘记打卡</div>
+  <div class="quick-examples" id="qaExamples"></div>
+  <div id="qaResult"></div>
+</div>
+
+<!-- ====== Tab: 人工客服 ====== -->
+<div class="tab-content" id="tab-chat">
+  <div id="chatInit" class="chat-init">
+    <p style="margin-bottom:12px;color:var(--text-secondary)">请输入你的姓名开始对话</p>
+    <input type="text" id="chatNameInput" placeholder="你的姓名" autocomplete="off">
+    <br><button class="btn-start" id="chatStartBtn">开始对话</button>
+  </div>
+  <div id="chatMain" style="display:none">
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-box">
+        <textarea id="chatInput" placeholder="输入你的问题..." rows="1"></textarea>
+        <button class="btn-send" id="chatSendBtn">➤</button>
+      </div>
+    </div>
+    <div class="chat-notice">💡 HR工作时间内回复，一般不超过2小时。紧急问题请直接微信/电话联系。</div>
   </div>
 </div>
 
-<div class="tabs">
-  <button class="tab-btn active" data-tab="smart" onclick="switchTab('smart')">智能问答</button>
-  <button class="tab-btn" data-tab="browse" onclick="switchTab('browse')">浏览全部</button>
+<!-- ====== Tab: OB申请 ====== -->
+<div class="tab-content" id="tab-ob">
+  <div id="obForm" class="ob-form">
+    <div class="form-title">OB账号申请</div>
+    <div class="form-desc">填写以下信息提交OB账号申请，HR将在<strong>两个工作日内</strong>完成审核开通。开通后会通过企业微信/短信通知你。</div>
+    <div class="form-group"><label>姓名 <span class="required">*</span></label><input type="text" id="obName" placeholder="请输入姓名" autocomplete="off"></div>
+    <div class="form-group"><label>工号 <span class="required">*</span></label><input type="text" id="obEmpId" placeholder="请输入工号" autocomplete="off"></div>
+    <div class="form-group"><label>手机号码 <span class="required">*</span></label><input type="tel" id="obPhone" placeholder="请输入手机号码" autocomplete="off"></div>
+    <button class="btn-submit" id="obSubmitBtn">提交申请</button>
+  </div>
+  <div id="obSuccess" style="display:none">
+    <div class="ob-success">
+      <div class="success-icon">✅</div>
+      <h3>申请成功</h3>
+      <p>请在<strong>两个工作日</strong>后使用。</p>
+      <div style="background:#fffbe6;border-radius:8px;padding:12px 14px;margin:14px 0;text-align:left;line-height:2;font-size:13px;word-break:break-all">
+        <div style="font-weight:600;margin-bottom:6px;font-size:14px">📋 OB账号信息</div>
+        <div>🔗 OB网址：<strong>https://ob.cpgroup.cn:88/</strong></div>
+        <div>👤 账号（工号）：<strong id="obSuccessEmpId">-</strong></div>
+        <div>🔑 初始密码：<strong>@Aa123456</strong></div>
+      </div>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">💡 点击下方按钮，可一键复制以上信息发送给HR确认。</p>
+      <button class="btn-submit" id="obCopyBtn" style="background:#fff;color:var(--primary);border:1px solid var(--primary)">📋 复制OB信息发送给HR</button>
+      <button class="btn-submit" id="obResetBtn" style="margin-top:8px;background:var(--primary-light);color:var(--primary)">再申请一个</button>
+    </div>
+  </div>
 </div>
 
-<div class="content">
-  <div id="smartArea">
-    <div class="categories" id="categories"></div>
-    <div id="thinkingBox"></div>
-    <div id="smartAnswer"></div>
-    <div id="smartResults"></div>
-  </div>
-  <div id="browseArea" style="display:none">
-    <div class="categories" id="browseCategories"></div>
-    <div id="browseList" class="qa-list"></div>
-  </div>
-  <div class="empty" id="emptyState" style="display:none">
-    <div class="empty-icon">💡</div>
-    <div>输入问题试试，比如：加班费怎么算、请病假要什么证明、社保断缴了怎么办…</div>
+<!-- ====== Tab: KPI评分 ====== -->
+<div class="tab-content" id="tab-kpi">
+  <div class="kpi-form" id="kpiForm">
+    <h2 id="kpiTitle">月度工作考核</h2>
+    <div class="kpi-fill-hint">
+      💡 填写提示：<br>
+      1. 每月关键考核指标原则上<strong>不超过3个</strong>，三个月内重点工作权重不作大幅度变更。<br>
+      2. "指标属性"不需要填写更改，只需填写"指标项"，可点击<a href="javascript:void(0)" id="kpiRefLink" style="color:var(--primary);text-decoration:underline">「参考指标」</a>选择。<br>
+      3. 权重合计必须为<strong>100%</strong>。
+    </div>
+    <div class="kpi-ref-panel" id="kpiRefPanel">
+      <h4>📋 关键指标参考（点击选择）</h4>
+      <div class="ref-list" id="kpiRefList"></div>
+    </div>
+    <div class="kpi-info">
+      <div class="info-item"><label>被考核人姓名 *</label><input type="text" id="kpiName" placeholder="姓名" autocomplete="off"></div>
+      <div class="info-item"><label>岗位 *</label><input type="text" id="kpiPosition" placeholder="岗位" autocomplete="off"></div>
+      <div class="info-item"><label>负责渠道 *</label><input type="text" id="kpiChannel" placeholder="渠道" autocomplete="off"></div>
+      <div class="info-item"><label>考核月份</label><input type="month" id="kpiMonth"></div>
+    </div>
+    <div class="kpi-table-wrap">
+      <table class="kpi-table" id="kpiTable">
+        <thead>
+          <tr><th style="width:5%">#</th><th style="width:13%">指标项</th><th style="width:8%">指标属性</th><th style="width:15%">关键指标</th><th style="width:17%">评分标准</th><th style="width:8%">权重(%)</th><th style="width:10%">目标数</th><th style="width:10%">已完成数</th><th style="width:8%">达成率</th><th style="width:8%">考评评分</th></tr>
+        </thead>
+        <tbody id="kpiTbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-bottom:12px;font-size:12px;color:var(--text-secondary)">
+      权重合计：<strong id="kpiWeightSum" style="color:var(--danger)">0%</strong>（必须等于100%）
+    </div>
+    <div class="kpi-summary">
+      <label>自我总结</label>
+      <textarea id="kpiSelfSummary" placeholder="被考核人填写本月工作总结..."></textarea>
+    </div>
+    <div class="kpi-summary">
+      <label>考核主管评价</label>
+      <textarea id="kpiSupervisorComment" placeholder="考核主管填写评价..."></textarea>
+    </div>
+    <div class="kpi-signatures">
+      <div class="sig-item"><label>被考核人签名</label><input type="text" id="kpiSigEmployee" placeholder="被考核人签名" autocomplete="off"></div>
+      <div class="sig-item"><label>考核主管签名</label><input type="text" id="kpiSigSupervisor" placeholder="考核主管签名" autocomplete="off"></div>
+      <div class="sig-item"><label>部门主管签名</label><input type="text" id="kpiSigDept" placeholder="部门主管签名" autocomplete="off"></div>
+    </div>
+    <div class="kpi-actions">
+      <button class="btn btn-primary" id="kpiSaveBtn">💾 保存评分</button>
+      <button class="btn btn-outline" id="kpiExportBtn">📋 复制到剪贴板</button>
+      <button class="btn btn-secondary" id="kpiResetBtn">🔄 清空重填</button>
+    </div>
   </div>
 </div>
 
-<div class="toast" id="toast">已复制</div>
-
-<div class="modal-overlay" id="copyModal">
-  <div class="copy-modal">
-    <div class="copy-modal-title">长按文字复制</div>
-    <div class="copy-modal-hint">如果一键复制不成功，可长按下方文字手动复制</div>
-    <textarea class="copy-text-area" id="copyTextArea" readonly></textarea>
-    <button class="copy-modal-btn" onclick="manualCopy()">选择全部文字</button>
-    <button class="copy-modal-close" onclick="closeCopyModal()">关闭</button>
+<!-- ====== Admin Panel ====== -->
+<div class="admin-trigger" id="adminTrigger">⚙️ 管理入口</div>
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-header"><h2>🔐 管理后台</h2><button class="btn-close" id="adminCloseBtn">关闭</button></div>
+  <div id="adminLogin">
+    <div class="admin-login">
+      <p style="margin-bottom:16px;color:var(--text-secondary)">请输入管理密码</p>
+      <input type="password" id="adminPwd" placeholder="管理密码" autocomplete="off">
+      <br><button class="btn-login" id="adminLoginBtn">登录</button>
+      <div class="error" id="adminError"></div>
+      <p style="margin-top:20px;font-size:11px;color:var(--text-tertiary)">默认密码：admin123（登录后可在设置中修改）</p>
+    </div>
+  </div>
+  <div id="adminMain" style="display:none">
+    <div class="admin-subtabs">
+      <button class="admin-subtab active" data-asub="chat">💬 客服消息</button>
+      <button class="admin-subtab" data-asub="ob">📋 OB申请</button>
+      <button class="admin-subtab" data-asub="kpi">📊 KPI评分</button>
+      <button class="admin-subtab" data-asub="settings">⚙️ 设置</button>
+    </div>
+    <div class="admin-content" id="adminContent"></div>
   </div>
 </div>
 
 <script>
-// ===== FAQ 数据 =====
+// ========== 1. DATA ==========
 const FAQ_DATA = [
-  {
-    id: 'd1', category: '考勤打卡',
-    question: "忘记打卡了怎么办？",
-    answer: "你好，忘记打卡请在当天内联系直属主管在考勤系统中补签（每月3次补卡机会）。\n补签流程：登录正大超人→ HR→ 考勤管理(我的异常) → 点击缺卡日期→ 异常处理→ 选择（上/下班未刷卡）→ 补卡→ 填写漏卡日期和原因 → 提交审批。\n\n《员工考勤管理办法》规定：\n    出现考勤异常的，系统每日进行异常情况提醒，员工本人应及时更正、确认当月考勤。工资结算前未确认的，视为认可最终考勤结果。\n5.2 下列考勤异常可以更正：\n5.2.1 因公迟到、早退；\n5.2.2 因公出、请休假未参加考勤；\n5.2.3 因不可预测或抗拒原因造成的迟到、旷工（应写明具体情况并附官方发布信息，于当日最迟于次日在系统内提交）；\n5.2.4 因考勤设备故障或指纹本身原因考勤设备无法识读（必须于当日通知部门主管）；\n5.2.5 其他异常经员工部门主管审批可以更正的情况。",
-    tags: ['补卡', '漏卡', '补签', '打卡']
-  },
-  {
-    id: 'd3', category: '考勤打卡',
-    question: "外勤打卡怎么操作？",
-    answer: "外勤打卡操作步骤：\n1. 打开正大超人APP\n2. 点击「移动打卡」\n3. 系统自动定位当前位置，确认地址无误\n4. 需添加现场照片（部分情况需要）\n5. 填写外勤事由\n6. 点击提交即可\n\n注意：只有销售或非固定办公地点人员才能使用移动打卡。",
-    tags: ['外勤', '出差', '打卡']
-  },
-  {
-    id: 'd5', category: '考勤打卡',
-    question: "考勤异常怎么申诉？",
-    answer: "考勤异常申诉流程：\n1. 登录正大超人→ 考勤管理→ 我的异常\n2. 选择异常日期和异常类型（漏卡/迟到/早退/旷工等）\n3. 填写申诉原因，上传相关证明（如交通延误证明、出差审批等）\n4. 提交直属主管审批\n5. 审批通过后考勤自动修正\n\n申诉时限：考勤异常发生之日起5个工作日内提交，逾期不再受理。",
-    tags: ['申诉', '考勤异常', '漏卡']
-  },
-  {
-    id: 'd6', category: '工资薪酬',
-    question: "工资什么时候发？",
-    answer: "每月20日发放上月工资（遇节假日提前至最近工作日）。\n\n工资条查看方式：\n方式1.登录正大超人 → HR→ 人员管理（工资条） → 接收验证码 → 选择对应月份即可查看明细。\n方式2.登录预留在入职信息的个人邮箱直接查看\n\n如有疑问，请在收到工资后3个工作日内联系HR核实。",
-    tags: ['发工资', '工资条', '发薪日']
-  },
-  {
-    id: 'd7', category: '工资薪酬',
-    question: "工资条怎么看？各项目含义",
-    answer: "工资条主要项目说明：\n• 基本工资：合同约定的固定工资\n• 岗位津贴：根据岗位级别发放的补贴\n• 绩效奖金：根据月度/季度考核结果发放\n• 加班费：平时1.5倍、周末2倍、法定节假日3倍\n• 扣款：迟到/早退等考勤扣款\n• 社保公积金个人部分：按规定代扣代缴\n• 个人所得税：按国家税法计算扣除\n\n实发工资 = 应发工资 - 社保公积金个人部分 - 个人所得税 - 其他扣款",
-    tags: ['工资条', '工资明细', '扣款']
-  },
-  {
-    id: 'd8', category: '工资薪酬',
-    question: "加班费怎么计算？",
-    answer: "加班费计算标准：\n• 工作日加班：时薪 × 1.5倍 × 加班时长\n• 周末加班：时薪 × 2.0倍 × 加班时长\n• 法定节假日加班：时薪 × 3.0倍 × 加班时长\n\n时薪 = 月基本工资 ÷ 21.75天 ÷ 8小时\n\n注意：公司指派的加班需提前在正大超人提交加班申请并审批通过，未审批的加班不计加班。加班后同时安排调休，已调休的时数不能计发加班费。",
-    tags: ['加班费', '加班', '计算']
-  },
-  {
-    id: 'd9', category: '工资薪酬',
-    question: "个税怎么算？起征点是多少？",
-    answer: "个人所得税计算方式：\n\n应纳税所得额 = 税前工资 - 五险一金个人部分 - 5000元（起征点）- 专项附加扣除\n\n税率表（累计预扣）：\n• 不超过36000元：3%\n• 36000-144000元：10%\n• 144000-300000元：20%\n• 300000-420000元：25%\n• 更高档位依次递增\n\n专项附加扣除包括：子女教育、继续教育、大病医疗、住房贷款利息/住房租金、赡养老人、婴幼儿照护等。可在「个人所得税APP」中填报。",
-    tags: ['个税', '税率', '起征点', '专项附加扣除']
-  },
-  {
-    id: 'd10', category: '请假休假',
-    question: "请假流程怎么走？",
-    answer: "请假申请流程：\n1. 登录正大超人 → HR →请假申请\n2. 选择请假类型（事假/病假/年假/婚假等）\n3. 填写请假起止时间、时长和事由\n4. 病假、丧假需上传相关证明（如病假：二甲以上医院开具的诊断证明、挂号单、缴费凭证、病历等；如丧假：同时提供关系证明和死亡证明）。\n5. 提交审批流程-催办上级。\n6. 审批通过后生效",
-    tags: ['请假', '流程', '事假', '病假']
-  },
-  {
-    id: 'd11', category: '请假休假',
-    question: "年假有几天？怎么休？",
-    answer: "年假天数标准（按累计工作年限计算）：\n• 工龄满1年不满10年：5天/年\n• 工龄满10年不满20年：10天/年\n• 工龄满20年以上：15天/年\n\n注意事项：\n1. 年假可分次休，最短半天。\n2. 建议在正大超人提前3个工作日提交年假申请。\n3. 当年年假当年休完，逾期清空。\n4. 离职时已休年假>当前可用年假的，按逾日工资折算扣回。",
-    tags: ['年假', '年休假', '假期']
-  },
-  {
-    id: 'd12', category: '请假休假',
-    question: "病假怎么扣工资？",
-    answer: "病假工资计算规则：\n• 1天以下病假不扣钱\n• 1天及以上病假-少于等于30天病假工资=个人工资的80%*病假天数\n• 大于30天病假-少于等于3个月病假工资=个人工资的60%*病假天数\n• 大于3个月病假-少于等于6个月病假工资=个人工资的30%*病假天数\n• 大于6个月病假-少于等于12个月病假工资=当地最低工资标准*病假天数\n• 大于12个月病假=当地最低工资标准*80%*病假天数\n• 病假需提供医院开具的诊断证明和病假条\n\n注意：\n1. 急诊可先口头通知主管，事后3天内补病假申请流程\n2. 病假期间不扣除年假\n3. 弄虚作假按旷工处理并追究责任",
-    tags: ['病假', '扣工资', '医院证明']
-  },
-  {
-    id: 'd13', category: '社保公积金',
-    question: "社保公积金扣多少？缴费比例",
-    answer: "社保公积金个人缴费比例（以工资基数为基数）：\n\n社保个人部分：\n• 养老保险：8%\n• 医疗保险：2%\n• 失业保险：0.5%\n• 工伤保险：0%（企业缴纳）\n• 生育保险：0%（企业缴纳）\n\n公积金个人部分：\n• 住房公积金：7%（另有补充公积金视公司政策）\n\n合计个人扣除比例约：17.5%\n\n注：缴费基数每年7月调整一次，以上年度月平均工资为准（设有上下限）。",
-    tags: ['社保', '公积金', '缴费比例', '五险一金']
-  },
-  {
-    id: 'd14', category: '社保公积金',
-    question: "社保断缴了怎么办？能补缴吗？",
-    answer: "社保断缴处理方式：\n1. 因离职导致的断缴：新入职后由新公司正常缴纳，断缴期间可协商补缴（需双方同意）\n2. 因公司原因漏缴：联系HR办理补缴，公司承担滞纳金\n3. 断缴影响：\n   - 医保断缴次月不能报销（补缴后恢复）\n   - 养老保险累计计算，断缴影响累计年限\n   - 购房/购车/落户资格可能受连续缴纳月数影响\n\n建议：离职前确认社保衔接，避免断缴。",
-    tags: ['社保断缴', '补缴', '社保']
-  },
-  {
-    id: 'd15', category: '其他',
-    question: "怎么修改个人基本信息？",
-    answer: "修改个人信息流程：\n1. 登录正大超人 → HR  → 人员管理（个人信息修改）\n2. 可修改：联系方式、紧急联系人、住址、生育状态、银行卡信息等\n3. 修改后点击「保存」即可生效\n\n如需修改以下信息，需联系HR提交纸质变更单：\n• 姓名（需提供身份证变更证明）\n• 身份证号\n• 银行卡号（需提供新卡复印件）\n• 学历信息（需提供学历证书）",
-    tags: ['个人信息', '修改', '资料']
-  }
+  { id: 'd1', category: '考勤打卡', question: "忘记打卡了怎么办？", answer: "你好，忘记打卡请在当天内联系直属主管在考勤系统中补签（每月3次补卡机会）。\n补签流程：登录正大超人→ HR→ 考勤管理(我的异常) → 点击缺卡日期→ 异常处理→ 选择（上/下班未刷卡）→ 补卡→ 填写漏卡日期和原因 → 提交审批。\n\n《员工考勤管理办法》规定：\n    出现考勤异常的，系统每日进行异常情况提醒，员工本人应及时更正、确认当月考勤。工资结算前未确认的，视为认可最终考勤结果。\n5.2 下列考勤异常可以更正：\n5.2.1 因公迟到、早退；\n5.2.2 因公出、请休假未参加考勤；\n5.2.3 因不可预测或抗拒原因造成的迟到、旷工（应写明具体情况并附官方发布信息，于当日最迟于次日在系统内提交）；\n5.2.4 因考勤设备故障或指纹本身原因考勤设备无法识读（必须于当日通知部门主管）；\n5.2.5 其他异常经员工部门主管审批可以更正的情况。", tags: ['补卡','漏卡','补签','打卡'] },
+  { id: 'd3', category: '考勤打卡', question: "外勤打卡怎么操作？", answer: "外勤打卡操作步骤：\n1. 打开正大超人APP\n2. 点击「移动打卡」\n3. 系统自动定位当前位置，确认地址无误\n4. 需添加现场照片（部分情况需要）\n5. 填写外勤事由\n6. 点击提交即可\n\n注意：只有销售或非固定办公地点人员才能使用移动打卡。", tags: ['外勤','出差','打卡'] },
+  { id: 'd5', category: '考勤打卡', question: "考勤异常怎么申诉？", answer: "考勤异常申诉流程：\n1. 登录正大超人→ 考勤管理→ 我的异常\n2. 选择异常日期和异常类型（漏卡/迟到/早退/旷工等）\n3. 填写申诉原因，上传相关证明（如交通延误证明、出差审批等）\n4. 提交直属主管审批\n5. 审批通过后考勤自动修正\n\n申诉时限：考勤异常发生之日起5个工作日内提交，逾期不再受理。", tags: ['申诉','考勤异常','漏卡'] },
+  { id: 'd6', category: '工资薪酬', question: "工资什么时候发？", answer: "每月20日发放上月工资（遇节假日提前至最近工作日）。\n\n工资条查看方式：\n方式1.登录正大超人 → HR→ 人员管理（工资条） → 接收验证码 → 选择对应月份即可查看明细。\n方式2.登录预留在入职信息的个人邮箱直接查看\n\n如有疑问，请在收到工资后3个工作日内联系HR核实。", tags: ['发工资','工资条','发薪日'] },
+  { id: 'd7', category: '工资薪酬', question: "工资条怎么看？各项目含义", answer: "工资条主要项目说明：\n• 基本工资：合同约定的固定工资\n• 岗位津贴：根据岗位级别发放的补贴\n• 绩效奖金：根据月度/季度考核结果发放\n• 加班费：平时1.5倍、周末2倍、法定节假日3倍\n• 扣款：迟到/早退等考勤扣款\n• 社保公积金个人部分：按规定代扣代缴\n• 个人所得税：按国家税法计算扣除\n\n实发工资 = 应发工资 - 社保公积金个人部分 - 个人所得税 - 其他扣款", tags: ['工资条','工资明细','扣款'] },
+  { id: 'd8', category: '工资薪酬', question: "加班费怎么计算？", answer: "加班费计算标准：\n• 工作日加班：时薪 × 1.5倍 × 加班时长\n• 周末加班：时薪 × 2.0倍 × 加班时长\n• 法定节假日加班：时薪 × 3.0倍 × 加班时长\n\n时薪 = 月基本工资 ÷ 21.75天 ÷ 8小时\n\n注意：公司指派的加班需提前在正大超人提交加班申请并审批通过，未审批的加班不计加班。加班后同时安排调休，已调休的时数不能计发加班费。", tags: ['加班费','加班','计算'] },
+  { id: 'd9', category: '工资薪酬', question: "个税怎么算？起征点是多少？", answer: "个人所得税计算方式：\n\n应纳税所得额 = 税前工资 - 五险一金个人部分 - 5000元（起征点）- 专项附加扣除\n\n税率表（累计预扣）：\n• 不超过36000元：3%\n• 36000-144000元：10%\n• 144000-300000元：20%\n• 300000-420000元：25%\n• 更高档位依次递增\n\n专项附加扣除包括：子女教育、继续教育、大病医疗、住房贷款利息/住房租金、赡养老人、婴幼儿照护等。可在「个人所得税APP」中填报。", tags: ['个税','税率','起征点','专项附加扣除'] },
+  { id: 'd10', category: '请假休假', question: "请假流程怎么走？", answer: "请假申请流程：\n1. 登录正大超人 → HR →请假申请\n2. 选择请假类型（事假/病假/年假/婚假等）\n3. 填写请假起止时间、时长和事由\n4. 病假、丧假需上传相关证明（如病假：二甲以上医院开具的诊断证明、挂号单、缴费凭证、病历等；如丧假：同时提供关系证明和死亡证明）。\n5. 提交审批流程-催办上级。\n6. 审批通过后生效", tags: ['请假','流程','事假','病假'] },
+  { id: 'd11', category: '请假休假', question: "年假有几天？怎么休？", answer: "年假天数标准（按累计工作年限计算）：\n• 工龄满1年不满10年：5天/年\n• 工龄满10年不满20年：10天/年\n• 工龄满20年以上：15天/年\n\n注意事项：\n1. 年假可分次休，最短半天。\n2. 建议在正大超人提前3个工作日提交年假申请。\n3. 当年年假当年休完，逾期清空。\n4. 离职时已休年假>当前可用年假的，按逾日工资折算扣回。", tags: ['年假','年休假','假期'] },
+  { id: 'd12', category: '请假休假', question: "病假怎么扣工资？", answer: "病假工资计算规则：\n• 1天以下病假不扣钱\n• 1天及以上病假-少于等于30天病假工资=个人基本工资/应出勤天数×0.8×病假天数\n• 大于30天病假-少于等于3个月病假工资=个人基本工资/应出勤天数×0.6×病假天数\n• 大于3个月病假-少于等于6个月病假工资=个人基本工资/应出勤天数×0.3×病假天数\n• 大于6个月病假-少于等于12个月病假工资=当地最低工资标准×病假天数\n• 大于12个月病假=当地最低工资标准×80%×病假天数\n• 病假需提供医院开具的诊断证明和病假条\n\n注意：\n1. 急诊可先口头通知主管，事后3天内补病假申请流程\n2. 病假期间不扣除年假\n3. 弄虚作假按旷工处理并追究责任", tags: ['病假','扣工资','医院证明'] },
+  { id: 'd13', category: '社保公积金', question: "社保公积金扣多少？缴费比例", answer: "社保公积金个人缴费比例（以工资基数为基数）：\n\n社保个人部分：\n• 养老保险：8%\n• 医疗保险：2%\n• 失业保险：0.5%\n• 工伤保险：0%（企业缴纳）\n• 生育保险：0%（企业缴纳）\n\n公积金个人部分：\n• 住房公积金：7%（另有补充公积金视公司政策）\n\n合计个人扣除比例约：17.5%\n\n注：缴费基数每年7月调整一次，以上年度月平均工资为准（设有上下限）。", tags: ['社保','公积金','缴费比例','五险一金'] },
+  { id: 'd14', category: '社保公积金', question: "社保断缴了怎么办？能补缴吗？", answer: "社保断缴处理方式：\n1. 因离职导致的断缴：新入职后由新公司正常缴纳，断缴期间可协商补缴（需双方同意）\n2. 因公司原因漏缴：联系HR办理补缴，公司承担滞纳金\n3. 断缴影响：\n   - 医保断缴次月不能报销（补缴后恢复）\n   - 养老保险累计计算，断缴影响累计年限\n   - 购房/购车/落户资格可能受连续缴纳月数影响\n\n建议：离职前确认社保衔接，避免断缴。", tags: ['社保断缴','补缴','社保'] },
+  { id: 'd15', category: '其他', question: "怎么修改个人基本信息？", answer: "修改个人信息流程：\n1. 登录正大超人 → HR  → 人员管理（个人信息修改）\n2. 可修改：联系方式、紧急联系人、住址、生育状态、银行卡信息等\n3. 修改后点击「保存」即可生效\n\n如需修改以下信息，需联系HR提交纸质变更单：\n• 姓名（需提供身份证变更证明）\n• 身份证号\n• 银行卡号（需提供新卡复印件）\n• 学历信息（需提供学历证书）", tags: ['个人信息','修改','资料'] }
 ];
 
-// ===== 推理规则引擎 =====
-// 每条规则包含：触发词、参数提取、分档计算、公式模板、推理步骤生成
-const REASONING_RULES = [
-
-  // === 病假工资计算 ===
-  {
-    id: 'sick_leave_calc',
-    name: '病假工资计算',
-    category: '请假休假',
-    triggers: ['病假', '病假工资', '病假扣', '病假怎么算', '生病请假', '病假几天', '病假扣多少', '病假扣钱', '看病请假', '请病假'],
-    intent: 'calculation',
-    extractParams: function(query) {
-      // 提取天数
-      var dayMatch = query.match(/(\d+(?:\.\d+)?)\s*天/);
-      if (dayMatch) return { days: parseFloat(dayMatch[1]) };
-      // 提取月数
-      var monthMatch = query.match(/(\d+(?:\.\d+)?)\s*个?月/);
-      if (monthMatch) return { days: parseFloat(monthMatch[1]) * 30 };
-      return { days: null };
-    },
-    compute: function(params) {
-      if (params.days === null || params.days === undefined) return null;
-      var d = params.days;
-      var tier, coefficient, formula, rateText;
-
-      if (d < 1) {
-        return {
-          tier: '1天以下',
-          coefficient: null,
-          formula: null,
-          steps: [
-            '识别问题类型：病假工资计算',
-            '提取参数：病假天数 = ' + d + '天',
-            '匹配规则：病假1天以下不扣钱',
-            '结论：不扣除工资'
-          ],
-          answer: '根据病假工资计算规则，病假' + d + '天不足1天，不扣除工资。',
-          faqLinks: ['d12', 'd10']
-        };
-      } else if (d <= 30) {
-        tier = '1天~30天';
-        coefficient = 0.8;
-        rateText = '80%';
-      } else if (d <= 90) {
-        tier = '30天~3个月';
-        coefficient = 0.6;
-        rateText = '60%';
-      } else if (d <= 180) {
-        tier = '3~6个月';
-        coefficient = 0.3;
-        rateText = '30%';
-      } else if (d <= 365) {
-        tier = '6~12个月';
-        coefficient = null;
-        rateText = '当地最低工资标准';
-      } else {
-        tier = '12个月以上';
-        coefficient = null;
-        rateText = '当地最低工资标准×80%';
-      }
-
-      // 构建公式
-      if (coefficient !== null) {
-        formula = '个人基本工资 ÷ 应出勤天数 × ' + coefficient + ' × ' + d + '天';
-      } else if (d <= 365) {
-        formula = '当地最低工资标准 × ' + d + '天';
-      } else {
-        formula = '当地最低工资标准 × 80% × ' + d + '天';
-      }
-
-      var steps = [
-        '识别问题类型：病假工资计算',
-        '提取参数：病假天数 = ' + d + '天',
-        '匹配规则：' + tier + '档，发放比例 = ' + rateText,
-        '应用公式：' + formula
-      ];
-
-      var answer = '请假' + d + '天属于"' + tier + '"档，病假工资发放比例为' + rateText + '。\n\n';
-      answer += '计算公式：\n' + formula + '\n\n';
-      answer += '说明：病假期间按个人基本工资的' + rateText + '发放，' + d + '天共计按' + rateText + '标准计算。\n\n';
-      answer += '注意：\n1. 病假需提供二甲以上医院诊断证明+挂号单+缴费凭证+病历\n2. 急诊可先口头通知主管，事后3天内补流程\n3. 病假期间不扣除年假';
-
-      return {
-        tier: tier,
-        coefficient: coefficient,
-        formula: formula,
-        steps: steps,
-        answer: answer,
-        faqLinks: ['d12', 'd10']
-      };
-    }
-  },
-
-  // === 加班费计算 ===
-  {
-    id: 'overtime_calc',
-    name: '加班费计算',
-    category: '工资薪酬',
-    triggers: ['加班费', '加班工资', '加班怎么算', '加班计算', '加班多少钱', '周末加班', '节假日加班', '加班费计算', '平时加班', '工作日加班'],
-    intent: 'calculation',
-    extractParams: function(query) {
-      var hoursMatch = query.match(/(\d+(?:\.\d+)?)\s*小时/);
-      var daysMatch = query.match(/(\d+(?:\.\d+)?)\s*天/);
-      var hours = null;
-      if (hoursMatch) hours = parseFloat(hoursMatch[1]);
-      else if (daysMatch) hours = parseFloat(daysMatch[1]) * 8;
-
-      // 检测加班类型
-      var type = 'weekday';
-      var typeLabel = '工作日加班';
-      if (/周末|休息日|双休|星期六|星期日|周六|周日/.test(query)) {
-        type = 'weekend';
-        typeLabel = '周末加班';
-      } else if (/法定|节假日|国庆|春节|五一|元旦|清明|端午|中秋/.test(query)) {
-        type = 'holiday';
-        typeLabel = '法定节假日加班';
-      }
-
-      return { hours: hours, type: type, typeLabel: typeLabel };
-    },
-    compute: function(params) {
-      if (params.hours === null || params.hours === undefined) return null;
-
-      var multipliers = { weekday: 1.5, weekend: 2.0, holiday: 3.0 };
-      var multiplier = multipliers[params.type] || 1.5;
-
-      var formula = '时薪 × ' + multiplier + ' × ' + params.hours + '小时';
-      var hourlyFormula = '时薪 = 月基本工资 ÷ 21.75天 ÷ 8小时';
-
-      var steps = [
-        '识别问题类型：加班费计算',
-        '提取参数：加班类型 = ' + params.typeLabel + '，加班时长 = ' + params.hours + '小时',
-        '匹配规则：' + params.typeLabel + '倍率 = ' + multiplier + '倍',
-        '计算时薪：' + hourlyFormula,
-        '应用公式：' + formula
-      ];
-
-      var answer = params.typeLabel + ' ' + params.hours + ' 小时的加班费计算：\n\n';
-      answer += '时薪公式：\n' + hourlyFormula + '\n\n';
-      answer += '加班费公式：\n' + formula + '\n\n';
-      answer += '说明：' + params.typeLabel + '按基本工资的' + multiplier + '倍计算，' + params.hours + '小时共计' + multiplier + '倍×' + params.hours + '小时。\n\n';
-      answer += '注意：\n1. 需提前在正大超人提交加班申请并审批通过\n2. 加班后如安排调休，已调休时数不计发加班费';
-
-      return {
-        multiplier: multiplier,
-        formula: formula,
-        hourlyFormula: hourlyFormula,
-        steps: steps,
-        answer: answer,
-        faqLinks: ['d8']
-      };
-    }
-  },
-
-  // === 年假天数查询 ===
-  {
-    id: 'annual_leave_calc',
-    name: '年假天数查询',
-    category: '请假休假',
-    triggers: ['年假', '年休假', '带薪假', '年假几天', '有多少天假', '休年假', '年假多少', '年假天数', '有几天年假'],
-    intent: 'eligibility',
-    extractParams: function(query) {
-      var yearMatch = query.match(/(\d+)\s*年/);
-      if (yearMatch) return { workYears: parseInt(yearMatch[1]) };
-      // 尝试提取"工龄X"
-      var glMatch = query.match(/工龄\s*(\d+)/);
-      if (glMatch) return { workYears: parseInt(glMatch[1]) };
-      return { workYears: null };
-    },
-    compute: function(params) {
-      if (params.workYears === null || params.workYears === undefined) return null;
-      var y = params.workYears;
-      var tier, days;
-
-      if (y < 1) {
-        return {
-          tier: '不满1年',
-          days: 0,
-          steps: [
-            '识别问题类型：年假天数查询',
-            '提取参数：工龄 = ' + y + '年',
-            '匹配规则：工作不满1年不享受年假',
-            '结论：0天年假'
-          ],
-          answer: '根据年假规定，工作不满1年不享受年假。',
-          faqLinks: ['d11']
-        };
-      } else if (y < 10) {
-        tier = '满1年不满10年';
-        days = 5;
-      } else if (y < 20) {
-        tier = '满10年不满20年';
-        days = 10;
-      } else {
-        tier = '满20年以上';
-        days = 15;
-      }
-
-      var formula = '年假 = ' + days + '天/年';
-
-      var steps = [
-        '识别问题类型：年假天数查询',
-        '提取参数：工龄 = ' + y + '年',
-        '匹配规则：' + tier + '，对应年假' + days + '天/年',
-        '结论：' + formula
-      ];
-
-      var answer = '工龄' + y + '年属于"' + tier + '"档，年假天数为 ' + days + ' 天/年。\n\n';
-      answer += '注意事项：\n1. 年假可分次休，最短半天\n2. 建议提前3个工作日在正大超人提交申请\n3. 当年年假当年休完，逾期清空\n4. 离职时已休年假>当前可用年假的，按逾日工资折算扣回';
-
-      return {
-        tier: tier,
-        days: days,
-        formula: formula,
-        steps: steps,
-        answer: answer,
-        faqLinks: ['d11']
-      };
-    }
-  },
-
-  // === 社保公积金计算 ===
-  {
-    id: 'social_insurance_calc',
-    name: '社保公积金计算',
-    category: '社保公积金',
-    triggers: ['社保扣', '公积金扣', '五险一金扣', '社保多少', '公积金多少', '社保比例', '公积金比例', '缴费比例', '社保公积金', '扣多少社保'],
-    intent: 'calculation',
-    extractParams: function(query) {
-      // 尝试提取工资基数
-      var salaryMatch = query.match(/(\d+)\s*[元块]/);
-      return { salary: salaryMatch ? parseInt(salaryMatch[1]) : null };
-    },
-    compute: function(params) {
-      var items = [
-        { name: '养老保险', rate: 0.08 },
-        { name: '医疗保险', rate: 0.02 },
-        { name: '失业保险', rate: 0.005 },
-        { name: '住房公积金', rate: 0.07 }
-      ];
-      var totalRate = 0.175;
-
-      var steps = [
-        '识别问题类型：社保公积金缴费计算',
-        '匹配规则：个人缴费比例合计约17.5%',
-        '明细：养老8% + 医疗2% + 失业0.5% + 公积金7%',
-        '应用公式：扣款金额 = 缴费基数 × 17.5%'
-      ];
-
-      var answer = '社保公积金个人缴费比例：\n\n';
-      answer += '社保个人部分（合计约10.5%）：\n';
-      items.slice(0, 3).forEach(function(item) {
-        answer += '• ' + item.name + '：' + (item.rate * 100) + '%\n';
-      });
-      answer += '\n公积金个人部分：\n';
-      answer += '• 住房公积金：7%\n\n';
-      answer += '合计个人扣除比例约：17.5%\n\n';
-
-      if (params.salary) {
-        var deduction = Math.round(params.salary * totalRate);
-        answer += '按工资基数' + params.salary + '元计算：\n';
-        answer += '个人每月扣除 ≈ ' + params.salary + ' × 17.5% = ' + deduction + '元\n\n';
-        steps.push('按工资基数' + params.salary + '元计算：' + params.salary + ' × 17.5% = ' + deduction + '元');
-        answer = answer.replace('应用公式：扣款金额 = 缴费基数 × 17.5%', '应用公式：' + params.salary + ' × 17.5% = ' + deduction + '元');
-      } else {
-        answer += '计算公式：\n扣款金额 = 缴费基数 × 17.5%\n\n';
-      }
-
-      answer += '注：缴费基数每年7月调整，以上年度月平均工资为准。';
-
-      return {
-        totalRate: totalRate,
-        formula: params.salary ? params.salary + ' × 17.5% = ' + Math.round(params.salary * totalRate) + '元' : '缴费基数 × 17.5%',
-        steps: steps,
-        answer: answer,
-        faqLinks: ['d13']
-      };
-    }
-  },
-
-  // === 个税计算 ===
-  {
-    id: 'tax_calc',
-    name: '个税计算',
-    category: '工资薪酬',
-    triggers: ['个税', '个人所得税', '交税', '扣税', '税怎么算', '税率', '起征点', '专项扣除', '专项附加'],
-    intent: 'calculation',
-    extractParams: function(query) {
-      var salaryMatch = query.match(/(\d+)\s*[元块]/);
-      return { salary: salaryMatch ? parseInt(salaryMatch[1]) : null };
-    },
-    compute: function(params) {
-      var steps = [
-        '识别问题类型：个人所得税计算',
-        '匹配规则：起征点5000元/月，采用累计预扣法',
-        '计算公式：应纳税所得额 = 税前工资 - 五险一金 - 5000 - 专项附加扣除',
-        '适用税率：根据累计应纳税所得额分档（3%~25%+）'
-      ];
-
-      var answer = '个人所得税计算方式：\n\n';
-      answer += '计算公式：\n应纳税所得额 = 税前工资 - 五险一金个人部分 - 5000元（起征点）- 专项附加扣除\n\n';
-      answer += '税率表（累计预扣法）：\n';
-      answer += '• 不超过36,000元：3%\n';
-      answer += '• 36,000~144,000元：10%\n';
-      answer += '• 144,000~300,000元：20%\n';
-      answer += '• 300,000~420,000元：25%\n';
-      answer += '• 更高档位依次递增\n\n';
-
-      if (params.salary) {
-        var taxable = Math.max(0, params.salary - params.salary * 0.175 - 5000);
-        var tax;
-        var rate;
-        if (taxable <= 36000) { rate = 0.03; tax = taxable * rate; }
-        else if (taxable <= 144000) { rate = 0.10; tax = taxable * rate - 2520; }
-        else if (taxable <= 300000) { rate = 0.20; tax = taxable * rate - 16920; }
-        else { rate = 0.25; tax = taxable * rate - 31920; }
-        tax = Math.max(0, Math.round(tax));
-        answer += '按税前' + params.salary + '元估算（假设五险一金约17.5%、无专项附加扣除）：\n';
-        answer += '应纳税所得额 = ' + params.salary + ' - ' + Math.round(params.salary * 0.175) + ' - 5000 = ' + Math.round(taxable) + '元\n';
-        answer += '适用税率：' + (rate * 100) + '%\n';
-        answer += '预估个税 ≈ ' + tax + '元\n\n';
-        steps.push('按税前' + params.salary + '元估算：应纳税所得额 ≈ ' + Math.round(taxable) + '元，税率' + (rate * 100) + '%，个税 ≈ ' + tax + '元');
-      }
-
-      answer += '专项附加扣除：子女教育、继续教育、大病医疗、住房贷款利息/租金、赡养老人、婴幼儿照护。\n可在「个人所得税APP」中填报。';
-
-      return {
-        formula: '应纳税所得额 = 税前工资 - 五险一金 - 5000 - 专项附加扣除',
-        steps: steps,
-        answer: answer,
-        faqLinks: ['d9']
-      };
-    }
-  }
-];
-
-// ===== 知识库规则（非计算类，关键词匹配） =====
 const KB_RULES = [
   { id: 'r1', category: '考勤打卡', triggers: ['补卡','漏打卡','忘打卡','没打卡','打卡忘了','忘记打卡','补签','打卡失败'], answer: '忘记打卡当月有3次补卡机会，请在当天内处理。\n操作：正大超人 → HR → 考勤管理(我的异常) → 点击缺卡日期 → 异常处理 → 补卡 → 提交审批。', faqLinks: ['d1'] },
   { id: 'r2', category: '考勤打卡', triggers: ['外勤','出差打卡','移动打卡','外面打卡','远程打卡'], answer: '打开正大超人APP → 移动打卡 → 系统自动定位 → 填写外勤事由 → 提交。\n注意：只有销售或非固定办公地点人员可使用移动打卡。', faqLinks: ['d3'] },
@@ -945,462 +356,675 @@ const KB_RULES = [
   { id: 'r19', category: '考勤打卡', triggers: ['调休','换休','补休','加班调休','换班'], answer: '加班后如安排调休，已调休的时数不能计发加班费。\n加班和调休不能重复计算，两者选其一。', faqLinks: ['d8'] }
 ];
 
-const CATEGORIES = ['考勤打卡', '工资薪酬', '请假休假', '社保公积金', '其他'];
-const CAT_ICONS = { '考勤打卡': '🕐', '工资薪酬': '💰', '请假休假': '📅', '社保公积金': '🏥', '其他': '📌' };
+const KPI_REF = [
+  { name:'销量达成率', desc:'月度销量达到XX', scope:'全员' },
+  { name:'销售增长率', desc:'月度销售增长XX%', scope:'全员' },
+  { name:'促销效果/促销销量', desc:'每场促销销量达XX，每少X则减X分', scope:'促销' },
+  { name:'促销活动数量', desc:'每场促销次数达XX', scope:'促销' },
+  { name:'促销计划完成率', desc:'实际完成/计划完成', scope:'促销' },
+  { name:'区域销售终端拜访率', desc:'每周/月拜访X家', scope:'业务' },
+  { name:'销售额达成率', desc:'月度销售额达到XX', scope:'全员' },
+  { name:'经营利润达成率', desc:'利润额达到XX', scope:'主管' },
+  { name:'开发客户数量', desc:'每月开发客户数量达XX', scope:'业务/终端开发' },
+  { name:'客户开发达成率', desc:'实际开发/目标开发', scope:'业务/终端开发' },
+  { name:'客户保有率', desc:'当月客户数/上月客户数×100%，达80%', scope:'业务' },
+  { name:'客户活跃度', desc:'每月进货客户占比达70%', scope:'业务/主管' },
+  { name:'重点客户销量增长率', desc:'重点客户持续增长10%', scope:'主管' },
+  { name:'产品铺货率', desc:'实际铺货/计划铺货，达80%', scope:'业务/终端' },
+  { name:'新产品市场占有率', desc:'新产品销售额/市场销售额', scope:'主管' },
+  { name:'重点产品销售额', desc:'重点产品月度销售额', scope:'全员' },
+  { name:'新产品铺货率', desc:'新产品导入X家', scope:'业务/终端' },
+  { name:'新产品销售增长率', desc:'同比上月增长10%', scope:'全员' },
+  { name:'新产品销售达成率', desc:'新产品销售XX吨/件', scope:'全员' },
+  { name:'渠道拓展计划完成率', desc:'目标X个节点/X区域', scope:'主管' },
+  { name:'渠道覆盖率', desc:'投放地区/应销售地区', scope:'主管' },
+  { name:'季度销售增长率', desc:'季度同比销售增长', scope:'经理级' },
+  { name:'市场分析/产品调研', desc:'收集市场信息完成分析报告', scope:'全员' },
+  { name:'销售计划制定', desc:'月度/季度销售计划', scope:'经理级' },
+  { name:'团队管理培训', desc:'团队培训和管理', scope:'经理级' },
+  { name:'生产管理', desc:'客诉率≤0.5%（不含猪源）', scope:'生产' },
+  { name:'食品安全管理', desc:'食品安全事故零发生', scope:'生产' }
+];
 
-let currentTab = 'smart';
-let currentCategory = '__all__';
-let searchKeyword = '';
-let activeCardId = null;
-let thinkingTimer = null;
+// ========== 2. TAB NAVIGATION ==========
+const tabNav = document.getElementById('tabNav');
+const tabs = document.querySelectorAll('.tab-content');
+tabNav.addEventListener('click', function(e){
+  const btn = e.target.closest('.tab-btn');
+  if(!btn) return;
+  tabNav.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const tid = btn.dataset.tab;
+  tabs.forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tid).classList.add('active');
+  if(tid==='chat') chatLoad();
+  if(tid==='kpi') kpiInit();
+});
 
-// ===== 推理引擎 =====
-function reasonEngine(query) {
-  var q = query.toLowerCase().trim();
-  if (!q) return { reasoning: null, smartAnswer: null, results: [] };
+// ========== 3. Q&A ENGINE ==========
+const qaSearch = document.getElementById('qaSearch');
+const qaResult = document.getElementById('qaResult');
+const qaExamples = document.getElementById('qaExamples');
 
-  // 第1步：尝试推理规则（计算类）
-  for (var i = 0; i < REASONING_RULES.length; i++) {
-    var rule = REASONING_RULES[i];
-    var matched = false;
-    for (var j = 0; j < rule.triggers.length; j++) {
-      if (q.includes(rule.triggers[j].toLowerCase())) {
-        matched = true;
-        break;
-      }
-    }
-    if (matched) {
-      var params = rule.extractParams(query);
-      var result = rule.compute(params);
-      if (result) {
-        return {
-          reasoning: result,
-          ruleName: rule.name,
-          ruleCategory: rule.category,
-          smartAnswer: null,
-          results: []
-        };
-      }
+const examples = ['请了3天病假工资怎么算','周末加班8小时多少钱','工龄8年有多少天年假','工资8000社保扣多少','忘记打卡怎么办'];
+qaExamples.innerHTML = examples.map(e=>'<button class="quick-example">'+e+'</button>').join('');
+qaExamples.addEventListener('click',function(e){
+  if(e.target.classList.contains('quick-example')){ qaSearch.value=e.target.textContent; qaSearch.dispatchEvent(new Event('input')); }
+});
+
+function extractNumbers(text){
+  const nums = [];
+  const matches = text.match(/(\d+\.?\d*)/g);
+  if(matches) matches.forEach(m=>{ const v=parseFloat(m); if(v>0&&v<=100000) nums.push(v); });
+  return nums;
+}
+
+function inferDiseasePay(text){
+  const nums = extractNumbers(text);
+  if(nums.length===0) return null;
+  const days = nums.find(n=>n>=1&&n<=365) || nums[0];
+  let rate, tier;
+  if(days<1){ rate='100%'; tier='1天以下不扣钱'; }
+  else if(days<=30){ rate='80%'; tier='1天~30天'; }
+  else if(days<=90){ rate='60%'; tier='30天~3个月'; }
+  else if(days<=180){ rate='30%'; tier='3个月~6个月'; }
+  else if(days<=365){ rate='当地最低工资标准'; tier='6个月~12个月'; }
+  else { rate='最低工资标准×80%'; tier='12个月以上'; }
+  return {days, rate, tier, formula: '个人基本工资 ÷ 应出勤天数 × '+rate.replace('%','')+(rate.includes('%')?'% × ':' × ')+days+'天'};
+}
+
+function inferOvertime(text){
+  const nums = extractNumbers(text);
+  let hours = nums.find(n=>n>=1&&n<=24)||8;
+  let salary = nums.find(n=>n>=3000&&n<=50000)||null;
+  let type='工作日加班', rate='1.5';
+  if(/周末|双休|周六|周日/.test(text)){ type='周末加班'; rate='2.0'; }
+  if(/法定|国庆|春节|五一|端午|中秋|元旦|清明/.test(text)){ type='法定节假日加班'; rate='3.0'; }
+  let formula = '时薪 × '+rate+'倍 × '+hours+'小时';
+  if(salary){ formula='('+salary+' ÷ 21.75 ÷ 8) × '+rate+' × '+hours+' ≈ ¥'+(salary/21.75/8*parseFloat(rate)*hours).toFixed(2); }
+  return {hours, type, rate:rate+'倍', formula};
+}
+
+function inferAnnualLeave(text){
+  const nums = extractNumbers(text);
+  const yrs = nums.find(n=>n>=1&&n<=50)||null;
+  let days;
+  if(!yrs) return {hint:'请提供你的累计工龄年数'};
+  if(yrs<1) days=0; else if(yrs<10) days=5; else if(yrs<20) days=10; else days=15;
+  return {yrs, days, rule:'累计工龄'+yrs+'年 → '+days+'天/年'};
+}
+
+function inferSocial(text){
+  const nums = extractNumbers(text);
+  const base = nums.find(n=>n>=2000&&n<=50000)||8000;
+  return {base, person:base*0.175, formula:'工资基数'+base+' × 17.5% = ¥'+(base*0.175).toFixed(2)};
+}
+
+function inferTax(text){
+  const nums = extractNumbers(text);
+  const gross = nums.find(n=>n>=3000&&n<=200000)||10000;
+  const taxable = Math.max(0,gross-gross*0.175-5000);
+  let rate,tier;
+  if(taxable<=0){ rate='0%'; tier='无需纳税'; }
+  else if(taxable<=3000){ rate='3%'; tier='不超过3000元'; }
+  else if(taxable<=12000){ rate='10%'; tier='3000-12000元'; }
+  else if(taxable<=25000){ rate='20%'; tier='12000-25000元'; }
+  else if(taxable<=35000){ rate='25%'; tier='25000-35000元'; }
+  else if(taxable<=55000){ rate='30%'; tier='35000-55000元'; }
+  else if(taxable<=80000){ rate='35%'; tier='55000-80000元'; }
+  else { rate='45%'; tier='80000元以上'; }
+  return {gross, taxable:taxable.toFixed(2), rate, tier};
+}
+
+function qaSearchFn(){
+  const q = qaSearch.value.trim();
+  if(!q){ qaResult.innerHTML=''; return; }
+
+  // Inference engine
+  let thinking=[], answer='', faqMatches=[];
+
+  // Disease pay
+  if(/病假|病休|住院.*工资|病.*扣/.test(q)){
+    const r = inferDiseasePay(q);
+    if(r){
+      thinking.push('识别问题类型：病假工资计算');
+      thinking.push('提取参数：病假天数 = '+r.days+'天');
+      thinking.push('匹配规则：'+r.tier+'档，发放比例 = '+r.rate);
+      thinking.push('应用公式：'+r.formula);
+      answer = '请假'+r.days+'天属于「'+r.tier+'」档，病假工资发放比例为<strong>'+r.rate+'</strong>。';
+      answer += '\n\n计算公式：<span class="formula">'+r.formula+'</span>';
+      answer += '\n\n实际病假工资 = 个人基本工资 ÷ 当月应出勤天数 × 发放比例 × 病假天数。';
+      faqMatches.push('d12','d10');
     }
   }
 
-  // 第2步：尝试知识库规则（非计算类，关键词匹配）
-  var scored = KB_RULES.map(function(rule) {
-    var maxScore = 0;
-    for (var k = 0; k < rule.triggers.length; k++) {
-      if (q.includes(rule.triggers[k].toLowerCase())) {
-        var score = rule.triggers[k].length / q.length + 0.5;
-        if (score > maxScore) maxScore = score;
+  // Overtime
+  if(/加班.*钱|加班.*工资|加班费|加班.*算|加班.*小时/.test(q)){
+    const r = inferOvertime(q);
+    if(r){
+      thinking.push('识别问题类型：加班费计算');
+      thinking.push('识别加班类型：'+r.type);
+      thinking.push('加班时长：'+r.hours+'小时');
+      thinking.push('匹配倍率：'+r.rate);
+      thinking.push('应用公式：'+r.formula);
+      answer = r.type+'，按<strong>'+r.rate+'</strong>计算。';
+      answer += '\n\n计算公式：<span class="formula">'+r.formula+'</span>';
+      answer += '\n\n时薪 = 月基本工资 ÷ 21.75天 ÷ 8小时\n注意：加班需提前申请并审批通过。';
+      faqMatches.push('d8','d7');
+    }
+  }
+
+  // Annual leave
+  if(/年假|年休|休假.*天|工龄.*年假/.test(q)){
+    const r = inferAnnualLeave(q);
+    if(r && r.days!==undefined){
+      thinking.push('识别问题类型：年假天数计算');
+      thinking.push('提取参数：累计工龄 = '+r.yrs+'年');
+      thinking.push('匹配规则：'+r.rule);
+      answer = r.hint?r.hint:'累计工龄<strong>'+r.yrs+'年</strong>，可享受<strong>'+r.days+'天</strong>年假/年。';
+      answer += '\n\n年假可分次休，最短半天。当年年假当年休完，逾期清空。';
+      faqMatches.push('d11');
+    } else{ answer=r.hint; }
+  }
+
+  // Social insurance
+  if(/社保.*扣|社保.*多少|五险一金.*多少|社保.*计算|工资.*社保/.test(q)){
+    const r = inferSocial(q);
+    thinking.push('识别问题类型：社保公积金计算');
+    thinking.push('提取参数：工资基数 ≈ '+r.base+'元');
+    thinking.push('个人缴费合计约17.5%');
+    thinking.push('计算公式：'+r.formula);
+    answer = '以工资基数约<strong>'+r.base+'元</strong>计算：';
+    answer += '\n• 养老保险(8%)：¥'+(r.base*0.08).toFixed(2);
+    answer += '\n• 医疗保险(2%)：¥'+(r.base*0.02).toFixed(2);
+    answer += '\n• 失业保险(0.5%)：¥'+(r.base*0.005).toFixed(2);
+    answer += '\n• 住房公积金(7%)：¥'+(r.base*0.07).toFixed(2);
+    answer += '\n\n个人合计约：<strong>¥'+r.person.toFixed(2)+'</strong>/月';
+    faqMatches.push('d13');
+  }
+
+  // Tax
+  if(/个税|税.*多少|税.*算|个人所得税/.test(q)){
+    const r = inferTax(q);
+    thinking.push('识别问题类型：个人所得税计算');
+    thinking.push('提取参数：税前工资 = '+r.gross+'元');
+    thinking.push('扣除五险一金(约17.5%)和起征点(5000)后，应纳税所得额 = '+r.taxable+'元');
+    thinking.push('匹配税率档：'+r.tier+' → '+r.rate);
+    answer = '税前工资<strong>'+r.gross+'元</strong>，应纳税所得额约<strong>'+r.taxable+'元</strong>，适用税率<strong>'+r.rate+'</strong>（'+r.tier+'）。';
+    answer += '\n\n如有专项附加扣除（子女教育/房贷/租房/赡养老人等），可在个人所得税APP填报，进一步减少纳税额。';
+    faqMatches.push('d9');
+  }
+
+  // Fallback to KB_RULES
+  if(!thinking.length){
+    for(const rule of KB_RULES){
+      for(const t of rule.triggers){
+        if(q.includes(t)){ thinking.push('匹配知识库规则：'+rule.category); answer=rule.answer; faqMatches.push(...(rule.faqLinks||[])); break; }
       }
+      if(answer) break;
     }
-    // 模糊匹配
-    if (maxScore === 0) {
-      var chars = q.replace(/\s/g, '').split('');
-      for (var m = 0; m < rule.triggers.length; m++) {
-        var tChars = rule.triggers[m].split('');
-        var hits = 0;
-        for (var n = 0; n < chars.length; n++) {
-          if (tChars.indexOf(chars[n]) >= 0) hits++;
-        }
-        var partial = hits / Math.max(tChars.length, 1);
-        if (partial > maxScore) maxScore = partial;
-      }
+  }
+
+  // Fallback to FAQ_DATA keyword search
+  if(!thinking.length){
+    const scored = FAQ_DATA.map(f=>{
+      let s=0;
+      const ql=q.toLowerCase();
+      if(f.question.toLowerCase().includes(ql)) s+=10;
+      f.tags.forEach(t=>{if(ql.includes(t.toLowerCase())) s+=5});
+      if(f.answer.toLowerCase().includes(ql)) s+=3;
+      return {faq:f,score:s};
+    }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+    if(scored.length>0){
+      answer='以下FAQ可能对你有帮助：';
+      faqMatches = scored.slice(0,5).map(x=>x.faq.id);
     }
-    return { rule: rule, score: maxScore };
-  });
+  }
 
-  scored.sort(function(a, b) { return b.score - a.score; });
-  var matched = scored.filter(function(s) { return s.score > 0.3; });
+  // Render
+  let html='';
+  if(thinking.length){
+    html += '<div class="think-box"><div class="think-title">🤔 思考过程</div>';
+    thinking.forEach((s,i)=>html+='<div class="think-step">'+(i+1)+'. '+s+'</div>');
+    html += '</div>';
+  }
+  if(answer){
+    html += '<div class="answer-box"><span class="ai-label">💡 智能回答</span><div style="margin-top:8px">'+answer.replace(/\n/g,'<br>')+'</div></div>';
+  }
 
-  if (matched.length > 0 && matched[0].score > 0.4) {
-    var relevantRules = matched.slice(0, 3);
-    var answers = relevantRules.map(function(r) { return r.rule.answer; });
-    var uniqueAnswers = [];
-    var seen = {};
-    for (var a = 0; a < answers.length; a++) {
-      if (!seen[answers[a]]) { seen[answers[a]] = true; uniqueAnswers.push(answers[a]); }
-    }
-    var mergedAnswer = uniqueAnswers.join('\n\n---\n\n');
-
-    var faqIds = {};
-    relevantRules.forEach(function(r) {
-      (r.rule.faqLinks || []).forEach(function(id) { faqIds[id] = true; });
+  if(faqMatches.length){
+    html += '<div class="faq-cards"><div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">📋 相关FAQ</div>';
+    const seen=new Set();
+    faqMatches.forEach(id=>{
+      if(seen.has(id)) return; seen.add(id);
+      const f=FAQ_DATA.find(x=>x.id===id);
+      if(f) html += '<div class="faq-card"><div class="faq-q">'+f.question+'</div><div class="faq-a">'+f.answer+'</div><div class="faq-cat">#'+f.category+'</div></div>';
     });
+    html += '</div>';
+  }
 
-    var categories = [];
-    relevantRules.forEach(function(r) {
-      if (categories.indexOf(r.rule.category) < 0) categories.push(r.rule.category);
+  if(!html) html='<div class="no-result"><div class="icon">🔍</div>未找到相关答案<br><span style="font-size:13px">试试换个关键词，或切换到「人工客服」直接留言</span></div>';
+  qaResult.innerHTML=html;
+}
+
+qaSearch.addEventListener('input',function(){
+  clearTimeout(this._t);
+  this._t=setTimeout(qaSearchFn,200);
+});
+document.addEventListener('keydown',function(e){ if(e.ctrlKey&&e.key==='k'){ e.preventDefault(); qaSearch.focus(); } });
+
+// ========== 4. CHAT ENGINE ==========
+const CHAT_KEY = 'hr_chat_data';
+let chatName = '';
+function getChatData(){ try{ return JSON.parse(localStorage.getItem(CHAT_KEY)||'{}'); }catch(e){ return {}; } }
+function saveChatData(d){ localStorage.setItem(CHAT_KEY,JSON.stringify(d)); }
+function chatLoad(){
+  if(chatName){ document.getElementById('chatInit').style.display='none'; document.getElementById('chatMain').style.display='block'; chatRender(); }
+}
+function chatStart(){
+  const n = document.getElementById('chatNameInput').value.trim();
+  if(!n) return alert('请输入姓名');
+  chatName = n;
+  document.getElementById('chatInit').style.display='none';
+  document.getElementById('chatMain').style.display='block';
+  chatRender();
+}
+function chatRender(){
+  const data = getChatData();
+  const msgs = data[chatName]||[];
+  const container = document.getElementById('chatMessages');
+  if(msgs.length===0){
+    container.innerHTML='<div class="chat-msg"><div class="system-msg">👋 你好！我是HR助手，请直接描述你的问题，HR会在工作时间内回复。</div></div>';
+  } else {
+    container.innerHTML=msgs.map(m=>{
+      if(m.role==='system') return '<div class="chat-msg"><div class="system-msg">'+m.text+'</div></div>';
+      const cls=m.role==='employee'?'employee':'hr';
+      return '<div class="chat-msg '+cls+'"><div><div class="bubble">'+m.text.replace(/\n/g,'<br>')+'</div><div class="meta">'+m.time+'</div></div></div>';
+    }).join('');
+  }
+  container.scrollTop=container.scrollHeight;
+}
+function chatSend(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
+  if(!text) return;
+  const data=getChatData();
+  if(!data[chatName]) data[chatName]=[];
+  const now=new Date();
+  const ts=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0')+' '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  data[chatName].push({role:'employee',text,time:ts});
+  saveChatData(data);
+  input.value='';
+  chatRender();
+  // Auto reply hint
+  setTimeout(()=>{
+    const d2=getChatData();
+    d2[chatName].push({role:'system',text:'✅ 你的消息已发送。HR将在工作时间内回复（一般不超过2小时）。\n\n💡 提示：如果是紧急问题，建议直接微信/电话联系HR。',time:ts});
+    saveChatData(d2);
+    chatRender();
+  },500);
+}
+// ========== 5. OB APPLICATION ==========
+const OB_KEY = 'hr_ob_applications';
+function obSubmit(){
+  const name=document.getElementById('obName').value.trim();
+  const empId=document.getElementById('obEmpId').value.trim();
+  const phone=document.getElementById('obPhone').value.trim();
+  if(!name) return alert('请输入姓名');
+  if(!empId) return alert('请输入工号');
+  if(!phone) return alert('请输入手机号码');
+  if(!/^1\d{10}$/.test(phone)) return alert('请输入正确的手机号码');
+
+  const apps=JSON.parse(localStorage.getItem(OB_KEY)||'[]');
+  apps.push({name,empId,phone,time:new Date().toISOString(),status:'待处理'});
+  localStorage.setItem(OB_KEY,JSON.stringify(apps));
+
+  // Save for success page display
+  sessionStorage.setItem('hr_last_ob', JSON.stringify({name, empId, phone}));
+  document.getElementById('obSuccessEmpId').textContent = empId;
+  document.getElementById('obForm').style.display='none';
+  document.getElementById('obSuccess').style.display='block';
+}
+function obCopyInfo(){
+  const last = JSON.parse(sessionStorage.getItem('hr_last_ob')||'{}');
+  const text = '【OB账号申请】\n姓名：'+last.name+'\n工号：'+last.empId+'\n手机：'+last.phone+'\n\nOB网址：https://ob.cpgroup.cn:88/\n账号（工号）：'+last.empId+'\n初始密码：@Aa123456\n\n✅ 申请成功，请在两个工作日后使用。';
+  navigator.clipboard.writeText(text).then(function(){alert('✅ OB信息已复制，可粘贴到微信发送给HR')}).catch(function(){alert(text)});
+}
+function obReset(){
+  document.getElementById('obName').value='';
+  document.getElementById('obEmpId').value='';
+  document.getElementById('obPhone').value='';
+  document.getElementById('obForm').style.display='block';
+  document.getElementById('obSuccess').style.display='none';
+}
+
+// ========== 6. KPI SCORING ==========
+const KPI_KEY = 'hr_kpi_submissions';
+const KPI_ROWS = 5;
+function kpiInit(){
+  if(document.getElementById('kpiTbody').children.length>0) return;
+  kpiBuildTable();
+  kpiBuildRef();
+  document.getElementById('kpiMonth').value = new Date().toISOString().slice(0,7);
+}
+function kpiBuildTable(){
+  const tbody=document.getElementById('kpiTbody');
+  let html='';
+  for(let i=0;i<KPI_ROWS;i++){
+    html+='<tr>';
+    html+='<td>'+(i+1)+'</td>';
+    html+='<td><input type="text" id="kpiItem'+i+'" placeholder="指标项"></td>';
+    html+='<td style="color:var(--text-tertiary);font-size:11px">-</td>';
+    html+='<td><input type="text" id="kpiKey'+i+'" placeholder="关键指标"></td>';
+    html+='<td><input type="text" id="kpiStd'+i+'" placeholder="评分标准"></td>';
+    html+='<td><input type="number" id="kpiWeight'+i+'" placeholder="%" min="0" max="100" class="kpi-calc-trigger"></td>';
+    html+='<td><input type="text" id="kpiTarget'+i+'" placeholder="目标数" class="kpi-calc-trigger"></td>';
+    html+='<td><input type="text" id="kpiDone'+i+'" placeholder="已完成" class="kpi-calc-trigger"></td>';
+    html+='<td class="rate-cell" id="kpiRate'+i+'">-</td>';
+    html+='<td><input type="text" id="kpiScore'+i+'" placeholder="评分"></td>';
+    html+='</tr>';
+  }
+  html+='<tr class="total-row"><td colspan="5">合计</td><td id="kpiTotalWeight">0%</td><td colspan="2"></td><td></td><td id="kpiTotalScore">-</td></tr>';
+  tbody.innerHTML=html;
+}
+function kpiBuildRef(){
+  document.getElementById('kpiRefList').innerHTML=KPI_REF.map((r,i)=>'<div class="ref-item kpi-ref-item" data-idx="'+i+'"><span class="ref-name">'+r.name+'</span><span class="ref-desc">'+r.desc+' ['+r.scope+']</span></div>').join('');
+}
+function kpiToggleRef(){
+  const p=document.getElementById('kpiRefPanel');
+  p.style.display=p.style.display==='block'?'none':'block';
+}
+function kpiSelectRef(idx){
+  const r=KPI_REF[idx];
+  // Find first empty row
+  for(let i=0;i<KPI_ROWS;i++){
+    const el=document.getElementById('kpiItem'+i);
+    if(!el.value.trim()){
+      el.value=r.name;
+      document.getElementById('kpiStd'+i).value=r.desc;
+      break;
+    }
+  }
+  document.getElementById('kpiRefPanel').style.display='none';
+}
+function kpiCalc(){
+  if(document.getElementById('kpiTbody').children.length===0) return;
+  let totalW=0;
+  for(let i=0;i<KPI_ROWS;i++){
+    const target=parseFloat(document.getElementById('kpiTarget'+i).value)||0;
+    const done=parseFloat(document.getElementById('kpiDone'+i).value)||0;
+    const rateEl=document.getElementById('kpiRate'+i);
+    if(target>0&&done>=0){ rateEl.textContent=(done/target*100).toFixed(1)+'%'; }else{ rateEl.textContent='-'; }
+    totalW+=parseFloat(document.getElementById('kpiWeight'+i).value)||0;
+  }
+  document.getElementById('kpiTotalWeight').textContent=totalW+'%';
+  const sumEl=document.getElementById('kpiWeightSum');
+  sumEl.textContent=totalW+'%';
+  sumEl.style.color=totalW===100?'var(--primary)':'var(--danger)';
+}
+function kpiGetData(){
+  const indicators=[];
+  for(let i=0;i<KPI_ROWS;i++){
+    const item=document.getElementById('kpiItem'+i).value.trim();
+    if(!item) continue;
+    indicators.push({
+      item,
+      key:document.getElementById('kpiKey'+i).value.trim(),
+      standard:document.getElementById('kpiStd'+i).value.trim(),
+      weight:parseFloat(document.getElementById('kpiWeight'+i).value)||0,
+      target:document.getElementById('kpiTarget'+i).value.trim(),
+      done:document.getElementById('kpiDone'+i).value.trim(),
+      rate:document.getElementById('kpiRate'+i).textContent,
+      score:document.getElementById('kpiScore'+i).value.trim()
     });
-
-    // 构建简单推理步骤
-    var steps = [
-      '识别问题类型：' + (categories[0] || '通用') + '咨询',
-      '匹配知识库规则：' + relevantRules.length + '条相关规则',
-      '整合答案并关联详细FAQ'
-    ];
-
-    return {
-      reasoning: { steps: steps, answer: mergedAnswer, faqLinks: Object.keys(faqIds) },
-      ruleName: '知识库匹配',
-      ruleCategory: categories[0],
-      smartAnswer: {
-        answer: mergedAnswer,
-        sources: categories
-      },
-      results: Object.keys(faqIds).map(function(id) {
-        var faq = FAQ_DATA.find(function(f) { return f.id === id; });
-        return faq ? Object.assign({}, faq, { score: 0.8 }) : null;
-      }).filter(Boolean)
-    };
   }
+  return {
+    name:document.getElementById('kpiName').value.trim(),
+    position:document.getElementById('kpiPosition').value.trim(),
+    channel:document.getElementById('kpiChannel').value.trim(),
+    month:document.getElementById('kpiMonth').value,
+    indicators,
+    selfSummary:document.getElementById('kpiSelfSummary').value.trim(),
+    supervisorComment:document.getElementById('kpiSupervisorComment').value.trim(),
+    sigEmployee:document.getElementById('kpiSigEmployee').value.trim(),
+    sigSupervisor:document.getElementById('kpiSigSupervisor').value.trim(),
+    sigDept:document.getElementById('kpiSigDept').value.trim(),
+    time:new Date().toISOString()
+  };
+}
+function kpiSave(){
+  const d=kpiGetData();
+  if(!d.name) return alert('请填写被考核人姓名');
+  if(!d.position) return alert('请填写岗位');
+  if(!d.channel) return alert('请填写负责渠道');
+  if(d.indicators.length===0) return alert('请至少填写一条考核指标');
 
-  // 第3步：回退到FAQ全文搜索
-  var faqResults = FAQ_DATA.filter(function(e) {
-    var haystack = (e.question + ' ' + e.answer + ' ' + (e.tags || []).join(' ')).toLowerCase();
-    var words = q.split(/\s+/);
-    return words.some(function(w) { return w.length > 0 && haystack.indexOf(w) >= 0; });
-  }).map(function(e) {
-    var s = 0;
-    var haystack = (e.question + ' ' + (e.tags || []).join(' ')).toLowerCase();
-    var words = q.split(/\s+/);
-    for (var w = 0; w < words.length; w++) {
-      if (haystack.indexOf(words[w]) >= 0) s += 0.3;
+  const totalW=d.indicators.reduce((s,i)=>s+i.weight,0);
+  if(Math.abs(totalW-100)>0.1) return alert('\u6743\u91cd\u5408\u8ba1\u5fc5\u987b\u4e3a100%\uff08\u5f53\u524d\u4e3a'+totalW+'%\uff09\uff0c\u8bf7\u8c03\u6574');
+
+  const subs=JSON.parse(localStorage.getItem(KPI_KEY)||'[]');
+  subs.unshift(d);
+  localStorage.setItem(KPI_KEY,JSON.stringify(subs));
+  alert('✅ KPI评分已保存！');
+}
+function kpiExport(){
+  const d=kpiGetData();
+  let text='【'+d.month+'月度工作考核】\n';
+  text+='姓名：'+d.name+'  岗位：'+d.position+'  负责渠道：'+d.channel+'\n\n';
+  text+='指标项\t关键指标\t评分标准\t权重\t目标数\t已完成\t达成率\t评分\n';
+  d.indicators.forEach(ind=>{
+    text+=ind.item+'\t'+ind.key+'\t'+ind.standard+'\t'+ind.weight+'%\t'+ind.target+'\t'+ind.done+'\t'+ind.rate+'\t'+ind.score+'\n';
+  });
+  text+='\n自我总结：\n'+d.selfSummary+'\n\n考核主管评价：\n'+d.supervisorComment+'\n';
+  text+='\n被考核人签名：'+d.sigEmployee+'  考核主管签名：'+d.sigSupervisor+'  部门主管签名：'+d.sigDept;
+
+  navigator.clipboard.writeText(text).then(()=>alert('✅ 已复制到剪贴板，可粘贴到微信/邮件发送')).catch(()=>alert(text));
+}
+function kpiReset(){
+  if(!confirm('\u786e\u5b9a\u6e05\u7a7a\u6240\u6709\u586b\u5199\u5185\u5bb9\uff1f')) return;
+  for(let i=0;i<KPI_ROWS;i++){
+    ['kpiItem','kpiKey','kpiStd','kpiWeight','kpiTarget','kpiDone','kpiScore'].forEach(prefix=>{
+      document.getElementById(prefix+i).value='';
+    });
+    document.getElementById('kpiRate'+i).textContent='-';
+  }
+  ['kpiName','kpiPosition','kpiChannel','kpiSelfSummary','kpiSupervisorComment','kpiSigEmployee','kpiSigSupervisor','kpiSigDept'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('kpiTotalWeight').textContent='0%';
+  document.getElementById('kpiWeightSum').textContent='0%';
+  kpiCalc();
+}
+
+// ========== 7. ADMIN PANEL ==========
+const ADMIN_PWD_KEY = 'hr_admin_password';
+const ADMIN_AUTH_KEY = 'hr_admin_authed';
+function getAdminPwd(){ return localStorage.getItem(ADMIN_PWD_KEY)||'admin123'; }
+function adminOpen(){
+  document.getElementById('adminPanel').classList.add('show');
+  if(sessionStorage.getItem(ADMIN_AUTH_KEY)==='1'){ adminShowMain(); }
+}
+function adminClose(){ document.getElementById('adminPanel').classList.remove('show'); }
+function adminLogin(){
+  const pwd=document.getElementById('adminPwd').value;
+  if(pwd===getAdminPwd()){
+    sessionStorage.setItem(ADMIN_AUTH_KEY,'1');
+    adminShowMain();
+  }else{ document.getElementById('adminError').textContent='密码错误'; }
+}
+function adminShowMain(){
+  document.getElementById('adminLogin').style.display='none';
+  document.getElementById('adminMain').style.display='block';
+  adminRender('chat');
+}
+function adminRender(sub){
+  const container=document.getElementById('adminContent');
+  document.querySelectorAll('.admin-subtab').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-asub="'+sub+'"]').classList.add('active');
+
+  if(sub==='chat'){
+    const data=getChatData();
+    const names=Object.keys(data).filter(k=>data[k].length>0);
+    if(names.length===0){
+      container.innerHTML='<div class="empty-state"><div class="empty-icon">💬</div>暂无客服消息<br><span style="font-size:12px">员工通过"人工客服"发送的消息会显示在这里</span></div>';
+      return;
     }
-    return Object.assign({}, e, { score: s });
-  }).sort(function(a, b) { return b.score - a.score; });
-
-  return { reasoning: null, smartAnswer: null, results: faqResults };
-}
-
-// ===== 渲染 =====
-function renderSmart(query) {
-  var q = query || searchKeyword;
-  var thinkingBox = document.getElementById('thinkingBox');
-  var container = document.getElementById('smartAnswer');
-  var resultsContainer = document.getElementById('smartResults');
-
-  // 清除之前的定时器
-  if (thinkingTimer) { clearTimeout(thinkingTimer); thinkingTimer = null; }
-
-  if (!q) {
-    thinkingBox.innerHTML = '';
-    container.innerHTML = '';
-    resultsContainer.innerHTML = '';
-    document.getElementById('emptyState').style.display = 'block';
-    document.getElementById('categories').style.display = 'none';
-    return;
-  }
-
-  document.getElementById('emptyState').style.display = 'none';
-  document.getElementById('categories').style.display = 'flex';
-
-  var result = reasonEngine(q);
-
-  // 如果有推理结果，展示思考过程
-  if (result.reasoning) {
-    var reasoning = result.reasoning;
-
-    // 先显示"思考中"
-    thinkingBox.innerHTML = '<div class="thinking-card"><div class="thinking-header">🤔 思考过程中</div><div class="think-loading">正在分析问题<span class="think-loading-dots"><span></span><span></span><span></span></span></div></div>';
-    container.innerHTML = '';
-    resultsContainer.innerHTML = '';
-
-    // 逐步显示思考步骤
-    var stepIndex = 0;
-    var stepsHtml = '<div class="thinking-card"><div class="thinking-header">🤔 思考过程</div><div class="thinking-steps" id="thinkSteps">';
-
-    function showNextStep() {
-      if (stepIndex < reasoning.steps.length) {
-        var stepsContainer = document.getElementById('thinkSteps');
-        if (!stepsContainer) {
-          thinkingBox.innerHTML = stepsHtml;
-          stepsContainer = document.getElementById('thinkSteps');
-        }
-        var step = reasoning.steps[stepIndex];
-        var stepEl = document.createElement('div');
-        stepEl.className = 'think-step';
-        stepEl.innerHTML = '<span class="think-step-num">' + (stepIndex + 1) + '</span><span>' + escapeHtml(step) + '</span>';
-        stepsContainer.appendChild(stepEl);
-        // 触发动画
-        setTimeout(function() { stepEl.classList.add('shown'); }, 10);
-        stepIndex++;
-        thinkingTimer = setTimeout(showNextStep, 500);
-      } else {
-        // 思考完成，显示答案
-        renderSmartAnswer(result, reasoning, container, resultsContainer);
-      }
+    let html='';
+    names.forEach(name=>{
+      const msgs=data[name];
+      const lastMsg=msgs[msgs.length-1];
+      const unread=msgs.filter(m=>m.role==='employee').length;
+      html+='<div class="admin-item"><div class="admin-item-header"><span class="admin-item-name">👤 '+name+' ('+unread+'条消息)</span><span class="admin-item-time">'+lastMsg.time+'</span></div>';
+      html+='<div class="admin-item-body">'+msgs.map(m=>'<div style="margin:4px 0;padding-left:'+(m.role==='hr'?'16px':'0')+'"><strong>'+(m.role==='hr'?'HR回复':'员工')+'：</strong>'+m.text.replace(/\n/g,'<br>')+'</div>').join('')+'</div>';
+      html+='<div class="chat-reply-box"><input type="text" id="reply_'+name+'" placeholder="回复 '+name+'..."><button class="btn-sm primary admin-reply-btn" data-name="'+name+'">回复</button></div></div>';
+    });
+    container.innerHTML=html;
+  } else if(sub==='ob'){
+    const apps=JSON.parse(localStorage.getItem(OB_KEY)||'[]');
+    if(apps.length===0){
+      container.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>暂无OB申请</div>';
+      return;
     }
-
-    // 短暂延迟后开始显示步骤
-    thinkingTimer = setTimeout(function() {
-      thinkingBox.innerHTML = stepsHtml;
-      stepIndex = 0;
-      showNextStep();
-    }, 300);
-
-  } else if (result.smartAnswer) {
-    // 知识库匹配结果（无推理步骤）
-    thinkingBox.innerHTML = '';
-    container.innerHTML = renderSmartAnswerCard(result.smartAnswer);
-    renderResults(result.results, resultsContainer, !!result.smartAnswer);
-  } else {
-    // FAQ搜索结果
-    thinkingBox.innerHTML = '';
-    container.innerHTML = '';
-    renderResults(result.results, resultsContainer, false);
+    container.innerHTML=apps.map((a,i)=>'<div class="admin-item"><div class="admin-item-header"><span class="admin-item-name">'+a.name+' ('+a.empId+')</span><span class="admin-item-time">'+new Date(a.time).toLocaleString('zh-CN')+'</span></div><div class="admin-item-body">📱 '+a.phone+'<br>状态：<strong style="color:'+(a.status==='已完成'?'var(--primary)':'var(--warning)')+'">'+a.status+'</strong></div><div class="admin-item-actions">'+(a.status==='待处理'?'<button class="btn-sm primary admin-ob-complete" data-idx="'+i+'">标记完成</button>':'')+'<button class="btn-sm outline admin-ob-delete" data-idx="'+i+'">删除</button></div></div>').join('');
+  } else if(sub==='kpi'){
+    const subs=JSON.parse(localStorage.getItem(KPI_KEY)||'[]');
+    if(subs.length===0){
+      container.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div>暂无KPI评分记录</div>';
+      return;
+    }
+    container.innerHTML=subs.map((s,i)=>'<div class="admin-item"><div class="admin-item-header"><span class="admin-item-name">'+s.name+' - '+s.position+'</span><span class="admin-item-time">'+s.month+'</span></div><div class="admin-item-body">渠道：'+s.channel+' | 指标数：'+s.indicators.length+' | 总权重：'+s.indicators.reduce((sum,ind)=>sum+ind.weight,0)+'%</div><div class="admin-item-actions"><button class="btn-sm primary admin-kpi-view" data-idx="'+i+'">查看详情</button><button class="btn-sm outline admin-kpi-delete" data-idx="'+i+'">删除</button></div></div>').join('');
+  } else if(sub==='settings'){
+    container.innerHTML='<div class="ob-form"><div class="form-title">修改管理密码</div><div class="form-group"><label>新密码</label><input type="password" id="newPwd" placeholder="输入新密码" autocomplete="off"></div><div class="form-group"><label>确认密码</label><input type="password" id="newPwd2" placeholder="再次输入新密码" autocomplete="off"></div><button class="btn-submit" id="adminChangePwdBtn">修改密码</button></div>';
   }
 }
-
-function renderSmartAnswer(result, reasoning, container, resultsContainer) {
-  // 渲染智能回答卡片
-  var formulaHtml = '';
-  if (reasoning.formula) {
-    formulaHtml = '<div class="formula-box"><div class="formula-label">计算公式</div>' + escapeHtml(reasoning.formula) + '</div>';
-  }
-
-  var faqLinks = reasoning.faqLinks || [];
-  if (faqLinks.length === 0 && result.smartAnswer) {
-    // 从smartAnswer中获取
-  }
-
-  container.innerHTML = '<div class="smart-answer">' +
-    '<div class="smart-answer-header">' +
-      '<span class="smart-badge">AI 智能回答</span>' +
-      '<span class="smart-source">' + (CAT_ICONS[result.ruleCategory] || '') + ' ' + (result.ruleCategory || '') + '</span>' +
-    '</div>' +
-    '<div class="smart-answer-content">' + escapeHtml(reasoning.answer) + '</div>' +
-    formulaHtml +
-    '<div class="smart-answer-footer">' +
-      '<button class="copy-btn" onclick="copyReasoningAnswer(this)">复制答案</button>' +
-    '</div>' +
-  '</div>';
-
-  // 渲染关联FAQ
-  var faqIds = reasoning.faqLinks || [];
-  var results = faqIds.map(function(id) {
-    var faq = FAQ_DATA.find(function(f) { return f.id === id; });
-    return faq ? Object.assign({}, faq, { score: 1 }) : null;
-  }).filter(Boolean);
-
-  renderResults(results, resultsContainer, true);
+function adminReply(name){
+  const inp=document.getElementById('reply_'+name);
+  const text=inp.value.trim();
+  if(!text) return;
+  const data=getChatData();
+  const now=new Date();
+  const ts=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0')+' '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  data[name].push({role:'hr',text,time:ts});
+  saveChatData(data);
+  inp.value='';
+  adminRender('chat');
 }
-
-function renderSmartAnswerCard(smartAnswer) {
-  return '<div class="smart-answer">' +
-    '<div class="smart-answer-header">' +
-      '<span class="smart-badge">AI 智能回答</span>' +
-      (smartAnswer.sources || []).map(function(c) {
-        return '<span class="smart-source">' + (CAT_ICONS[c] || '') + ' ' + c + '</span>';
-      }).join('') +
-    '</div>' +
-    '<div class="smart-answer-content">' + escapeHtml(smartAnswer.answer) + '</div>' +
-    '<div class="smart-answer-footer">' +
-      '<button class="copy-btn" onclick="copySmartAnswer(this)">复制</button>' +
-    '</div>' +
-  '</div>';
+function adminCompleteOB(idx){
+  const apps=JSON.parse(localStorage.getItem(OB_KEY)||'[]');
+  apps[idx].status='已完成';
+  localStorage.setItem(OB_KEY,JSON.stringify(apps));
+  adminRender('ob');
 }
-
-function renderResults(results, container, hasSmartAnswer) {
-  if (results && results.length > 0) {
-    container.innerHTML = '<div class="section-title">' + (hasSmartAnswer ? '📋 相关详细问答' : '🔍 搜索结果') + '</div>' +
-      '<div class="qa-list">' + results.map(function(e) {
-        return '<div class="qa-card ' + (e.score > 0.5 ? 'highlight' : '') + ' ' + (activeCardId === e.id ? 'active' : '') + '" data-id="' + e.id + '">' +
-          '<div class="qa-question" onclick="toggleCard(\'' + e.id + '\')">' +
-            '<span class="qa-question-text">' + escapeHtml(e.question) + '</span>' +
-            '<span class="qa-toggle">▼</span>' +
-          '</div>' +
-          '<div class="qa-body">' +
-            '<div class="qa-answer">' + escapeHtml(e.answer) + '</div>' +
-            '<div class="qa-footer">' +
-              '<span class="qa-tag">' + (CAT_ICONS[e.category] || '') + ' ' + e.category + '</span>' +
-              (e.tags || []).slice(0, 3).map(function(t) { return '<span class="qa-tag">' + escapeHtml(t) + '</span>'; }).join('') +
-              '<span class="qa-match-score">' + Math.round(e.score * 100) + '% 相关</span>' +
-              '<button class="copy-btn" onclick="copyFaqAnswer(\'' + e.id + '\', this)">复制</button>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
-      }).join('') + '</div>';
-  } else {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><div>没有找到相关问题，试试换个说法</div></div>';
-  }
+function adminDeleteOB(idx){
+  if(!confirm('确定删除这条OB申请？')) return;
+  const apps=JSON.parse(localStorage.getItem(OB_KEY)||'[]');
+  apps.splice(idx,1);
+  localStorage.setItem(OB_KEY,JSON.stringify(apps));
+  adminRender('ob');
 }
-
-function renderBrowse() {
-  var data = FAQ_DATA.slice();
-  if (currentCategory !== '__all__') {
-    data = data.filter(function(e) { return e.category === currentCategory; });
-  }
-  var container = document.getElementById('browseList');
-  container.innerHTML = data.map(function(e) {
-    return '<div class="qa-card ' + (activeCardId === e.id ? 'active' : '') + '" data-id="' + e.id + '">' +
-      '<div class="qa-question" onclick="toggleCard(\'' + e.id + '\')">' +
-        '<span class="qa-question-text">' + escapeHtml(e.question) + '</span>' +
-        '<span class="qa-toggle">▼</span>' +
-      '</div>' +
-      '<div class="qa-body">' +
-        '<div class="qa-answer">' + escapeHtml(e.answer) + '</div>' +
-        '<div class="qa-footer">' +
-          '<span class="qa-tag">' + (CAT_ICONS[e.category] || '') + ' ' + e.category + '</span>' +
-          (e.tags || []).slice(0, 3).map(function(t) { return '<span class="qa-tag">' + escapeHtml(t) + '</span>'; }).join('') +
-          '<button class="copy-btn" onclick="copyFaqAnswer(\'' + e.id + '\', this)">复制</button>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  }).join('');
+function adminViewKPI(idx){
+  const subs=JSON.parse(localStorage.getItem(KPI_KEY)||'[]');
+  const s=subs[idx];
+  let text='【'+s.month+'月度工作考核】\n';
+  text+='姓名：'+s.name+'  岗位：'+s.position+'  渠道：'+s.channel+'\n\n';
+  s.indicators.forEach(ind=>{ text+=ind.item+' | '+ind.key+' | '+ind.standard+' | 权重'+ind.weight+'% | 目标'+ind.target+' | 完成'+ind.done+' | 达成率'+ind.rate+' | 评分'+ind.score+'\n'; });
+  text+='\n自我总结：\n'+s.selfSummary+'\n\n考核主管评价：\n'+s.supervisorComment+'\n';
+  text+='\n签名：'+s.sigEmployee+' / '+s.sigSupervisor+' / '+s.sigDept;
+  alert(text);
 }
-
-function renderCategories(containerId, onChange) {
-  var container = document.getElementById(containerId);
-  var html = '<div class="cat-chip ' + (currentCategory === '__all__' ? 'active' : '') + '" onclick="' + onChange + '(\'__all__\')">全部</div>';
-  CATEGORIES.forEach(function(cat) {
-    html += '<div class="cat-chip ' + (currentCategory === cat ? 'active' : '') + '" onclick="' + onChange + '(\'' + cat + '\')">' + (CAT_ICONS[cat] || '') + ' ' + cat + '</div>';
-  });
-  container.innerHTML = html;
+function adminDeleteKPI(idx){
+  if(!confirm('确定删除这条KPI评分？')) return;
+  const subs=JSON.parse(localStorage.getItem(KPI_KEY)||'[]');
+  subs.splice(idx,1);
+  localStorage.setItem(KPI_KEY,JSON.stringify(subs));
+  adminRender('kpi');
 }
-
-// ===== Actions =====
-function quickAsk(question) {
-  document.getElementById('searchInput').value = question;
-  searchKeyword = question;
-  if (currentTab === 'smart') {
-    renderSmart(question);
-  }
+function adminChangePwd(){
+  const p1=document.getElementById('newPwd').value;
+  const p2=document.getElementById('newPwd2').value;
+  if(!p1) return alert('请输入新密码');
+  if(p1!==p2) return alert('两次密码不一致');
+  localStorage.setItem(ADMIN_PWD_KEY,p1);
+  alert('✅ 密码已修改！');
+  adminRender('settings');
 }
+// ========== 8. INIT ==========
+(function(){
+  // --- Static buttons ---
+  var el;
+  el=document.getElementById('chatStartBtn'); if(el) el.addEventListener('click',chatStart);
+  el=document.getElementById('chatSendBtn'); if(el) el.addEventListener('click',chatSend);
+  el=document.getElementById('obSubmitBtn'); if(el) el.addEventListener('click',obSubmit);
+  el=document.getElementById('obCopyBtn'); if(el) el.addEventListener('click',obCopyInfo);
+  el=document.getElementById('obResetBtn'); if(el) el.addEventListener('click',obReset);
+  el=document.getElementById('kpiSaveBtn'); if(el) el.addEventListener('click',kpiSave);
+  el=document.getElementById('kpiExportBtn'); if(el) el.addEventListener('click',kpiExport);
+  el=document.getElementById('kpiResetBtn'); if(el) el.addEventListener('click',kpiReset);
+  el=document.getElementById('kpiRefLink'); if(el) el.addEventListener('click',function(e){e.preventDefault();kpiToggleRef();});
+  el=document.getElementById('adminTrigger'); if(el) el.addEventListener('click',adminOpen);
+  el=document.getElementById('adminCloseBtn'); if(el) el.addEventListener('click',adminClose);
+  el=document.getElementById('adminLoginBtn'); if(el) el.addEventListener('click',adminLogin);
 
-function switchTab(tab) {
-  currentTab = tab;
-  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.tab === tab); });
-  document.getElementById('smartArea').style.display = tab === 'smart' ? 'block' : 'none';
-  document.getElementById('browseArea').style.display = tab === 'browse' ? 'block' : 'none';
-  if (tab === 'smart') {
-    renderSmart(searchKeyword);
-  } else {
-    renderBrowse();
-  }
-}
-
-function selectCategory(cat) {
-  currentCategory = cat;
-  renderCategories(currentTab === 'smart' ? 'categories' : 'browseCategories', 'selectCategory');
-  if (currentTab === 'browse') {
-    renderBrowse();
-  } else {
-    renderSmart(searchKeyword);
-  }
-}
-
-function toggleCard(id) {
-  activeCardId = (activeCardId === id) ? null : id;
-  if (currentTab === 'browse') {
-    renderBrowse();
-  } else {
-    renderSmart(searchKeyword);
-  }
-}
-
-function copyReasoningAnswer(btn) {
-  var content = document.querySelector('.smart-answer-content');
-  var formula = document.querySelector('.formula-box');
-  var text = content ? content.textContent : '';
-  if (formula) text += '\n\n' + formula.textContent;
-  copyText(text, btn);
-}
-
-function copySmartAnswer(btn) {
-  var content = document.querySelector('.smart-answer-content');
-  if (!content) return;
-  copyText(content.textContent, btn);
-}
-
-function copyFaqAnswer(id, btn) {
-  var entry = FAQ_DATA.find(function(e) { return e.id === id; });
-  if (!entry) return;
-  copyText(entry.answer, btn);
-}
-
-function copyText(text, btn) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(function() { onCopySuccess(btn); })
-      .catch(function() { fallbackCopy(text, btn); });
-  } else {
-    fallbackCopy(text, btn);
-  }
-}
-
-function fallbackCopy(text, btn) {
-  var textarea = document.createElement('textarea');
-  textarea.value = text;
-  textarea.style.position = 'fixed';
-  textarea.style.opacity = '0';
-  textarea.style.fontSize = '16px';
-  document.body.appendChild(textarea);
-  textarea.select();
-  try { document.execCommand('copy'); onCopySuccess(btn); } catch(e) { showCopyModal(text); }
-  document.body.removeChild(textarea);
-}
-
-function onCopySuccess(btn) {
-  if (btn) {
-    btn.classList.add('copied');
-    btn.textContent = '已复制';
-    setTimeout(function() { btn.classList.remove('copied'); btn.textContent = '复制'; }, 1500);
-  }
-  showToast('已复制 ✓');
-}
-
-function showCopyModal(text) {
-  document.getElementById('copyTextArea').value = text;
-  document.getElementById('copyModal').classList.add('show');
-  setTimeout(function() { var ta = document.getElementById('copyTextArea'); ta.focus(); ta.select(); }, 300);
-}
-
-function closeCopyModal() { document.getElementById('copyModal').classList.remove('show'); }
-function manualCopy() {
-  var ta = document.getElementById('copyTextArea');
-  ta.focus(); ta.select();
-  try {
-    if (document.execCommand('copy')) { closeCopyModal(); showToast('已复制 ✓'); }
-    else { showToast('请长按文字手动复制'); }
-  } catch(e) { showToast('请长按文字手动复制'); }
-}
-
-function showToast(msg) {
-  var toast = document.getElementById('toast');
-  toast.innerText = msg;
-  toast.classList.add('show');
-  setTimeout(function() { toast.classList.remove('show'); }, 2000);
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-// ===== Init =====
-function init() {
-  document.getElementById('entryCount').textContent = '覆盖 ' + FAQ_DATA.length + ' 类常见问题';
-
-  renderCategories('categories', 'selectCategory');
-  renderCategories('browseCategories', 'selectCategory');
-  renderBrowse();
-
-  var debounceTimer;
-  document.getElementById('searchInput').addEventListener('input', function(e) {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(function() {
-      searchKeyword = e.target.value.trim();
-      if (currentTab === 'smart') {
-        renderSmart(searchKeyword);
-      }
-    }, 300);
+  // --- KPI calc triggers (event delegation on tbody) ---
+  el=document.getElementById('kpiTbody');
+  if(el) el.addEventListener('input',function(e){
+    if(e.target.classList.contains('kpi-calc-trigger')) kpiCalc();
   });
 
-  document.getElementById('copyModal').addEventListener('click', function(e) {
-    if (e.target === document.getElementById('copyModal')) closeCopyModal();
+  // --- Admin subtabs ---
+  el=document.querySelector('.admin-subtabs');
+  if(el) el.addEventListener('click',function(e){
+    var btn=e.target.closest('.admin-subtab');
+    if(!btn) return;
+    adminRender(btn.dataset.asub);
   });
-}
 
-init();
+  // --- Admin content event delegation (dynamic buttons) ---
+  el=document.getElementById('adminContent');
+  if(el) el.addEventListener('click',function(e){
+    var btn;
+    btn=e.target.closest('.admin-reply-btn');
+    if(btn){ adminReply(btn.dataset.name); return; }
+    btn=e.target.closest('.admin-ob-complete');
+    if(btn){ adminCompleteOB(parseInt(btn.dataset.idx)); return; }
+    btn=e.target.closest('.admin-ob-delete');
+    if(btn){ adminDeleteOB(parseInt(btn.dataset.idx)); return; }
+    btn=e.target.closest('.admin-kpi-view');
+    if(btn){ adminViewKPI(parseInt(btn.dataset.idx)); return; }
+    btn=e.target.closest('.admin-kpi-delete');
+    if(btn){ adminDeleteKPI(parseInt(btn.dataset.idx)); return; }
+    btn=e.target.closest('#adminChangePwdBtn');
+    if(btn){ adminChangePwd(); return; }
+  });
+
+  // --- FAQ card click to expand ---
+  el=document.getElementById('qaResult');
+  if(el) el.addEventListener('click',function(e){
+    var card=e.target.closest('.faq-card');
+    if(card){
+      var faqA=card.querySelector('.faq-a');
+      if(faqA) faqA.style.webkitLineClamp='unset';
+    }
+  });
+
+  // --- KPI ref list event delegation ---
+  el=document.getElementById('kpiRefList');
+  if(el) el.addEventListener('click',function(e){
+    var btn=e.target.closest('.kpi-ref-item');
+    if(btn){ kpiSelectRef(parseInt(btn.dataset.idx)); }
+  });
+
+  // --- Chat input Enter key ---
+  el=document.getElementById('chatInput');
+  if(el) el.addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); chatSend(); }
+  });
+
+  // --- Admin login Enter key ---
+  el=document.getElementById('adminPwd');
+  if(el) el.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){ e.preventDefault(); adminLogin(); }
+  });
+
+})();
 </script>
 </body>
 </html>
