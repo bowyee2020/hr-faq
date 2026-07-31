@@ -149,8 +149,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 .admin-login .error{color:var(--danger);font-size:13px;margin-top:8px}
 
 .admin-subtabs{display:flex;gap:0;background:#fff;border-bottom:1px solid var(--border);padding:0 16px}
-.admin-subtab{flex:1;padding:12px 0;text-align:center;font-size:13px;cursor:pointer;border:none;background:transparent;font-family:inherit;color:var(--text-secondary);border-bottom:2px solid transparent;transition:.2s}
+.admin-subtab{flex:1;padding:12px 0;text-align:center;font-size:13px;cursor:pointer;border:none;background:transparent;font-family:inherit;color:var(--text-secondary);border-bottom:2px solid transparent;transition:.2s;position:relative}
 .admin-subtab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.admin-subtab .notify-dot{position:absolute;top:6px;right:25%;width:8px;height:8px;background:var(--danger);border-radius:50%;display:none;animation:pulse 1.5s infinite}
+.admin-subtab .notify-dot.show{display:block}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
 .admin-content{padding:16px}
 .admin-item{background:var(--card-bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .admin-item .admin-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -175,9 +178,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
   .kpi-table input, .kpi-table select, .kpi-table textarea{font-size:12px}
   .search-box input{font-size:16px}
 }
+/* WeChat guide bar */
+.wechat-guide{background:rgba(0,0,0,.75);color:#fff;padding:8px 16px;font-size:12px;display:none;align-items:center;justify-content:space-between;line-height:1.5;z-index:200;position:sticky;top:0}
+.wechat-guide.show{display:flex}
+.wechat-guide .guide-text{flex:1}
+.wechat-guide .close-btn{background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:0 0 0 12px;flex-shrink:0}
 </style>
 </head>
 <body>
+<!-- WeChat floating window guide -->
+<div class="wechat-guide" id="wechatGuide">
+  <span class="guide-text">📌 点击右上角 <strong>···</strong> →「浮窗」可随时快速打开</span>
+  <button class="close-btn" id="wechatGuideClose">✕</button>
+</div>
 <header class="header">
   <h1>HR自助服务中心</h1>
   <nav class="tab-nav" id="tabNav">
@@ -312,9 +325,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
   </div>
   <div id="adminMain" style="display:none">
     <div class="admin-subtabs">
-      <button class="admin-subtab active" data-asub="chat">💬 客服消息</button>
-      <button class="admin-subtab" data-asub="ob">📋 OB申请</button>
-      <button class="admin-subtab" data-asub="kpi">📊 KPI评分</button>
+      <button class="admin-subtab active" data-asub="chat">💬 客服消息<span class="notify-dot" id="dot-chat"></span></button>
+      <button class="admin-subtab" data-asub="ob">📋 OB申请<span class="notify-dot" id="dot-ob"></span></button>
+      <button class="admin-subtab" data-asub="kpi">📊 KPI评分<span class="notify-dot" id="dot-kpi"></span></button>
       <button class="admin-subtab" data-asub="settings">⚙️ 设置</button>
     </div>
     <div class="admin-content" id="adminContent"></div>
@@ -333,7 +346,7 @@ var GITEE_CONFIG = {
 var USE_CLOUD = true;
 
 // 内存缓存（云端异步读取后存入，后续读写都同步）
-var _cloudData = { chats: {}, obApplications: [] };
+var _cloudData = { chats: {}, obApplications: [], kpiSubmissions: [] };
 var _cloudSHA = null;
 
 // --- Base64 UTF-8 helpers ---
@@ -352,6 +365,7 @@ function giteeRead(){
       var parsed = JSON.parse(_b64dec(data.content));
       if(parsed.chats) _cloudData.chats = parsed.chats;
       if(parsed.obApplications) _cloudData.obApplications = parsed.obApplications;
+      if(parsed.kpiSubmissions) _cloudData.kpiSubmissions = parsed.kpiSubmissions;
     }
     return _cloudData;
   }).catch(function(e){ console.log('Cloud read failed:', e); return _cloudData; });
@@ -805,6 +819,20 @@ function obReset(){
 // ========== 6. KPI SCORING ==========
 const KPI_KEY = 'hr_kpi_submissions';
 const KPI_ROWS = 5;
+
+// --- KPI data layer (cloud + localStorage fallback) ---
+function getKPISubs(){
+  if(USE_CLOUD) return _cloudData.kpiSubmissions || [];
+  try{ return JSON.parse(localStorage.getItem(KPI_KEY)||'[]'); }catch(e){ return []; }
+}
+function saveKPISubs(subs){
+  if(USE_CLOUD){
+    _cloudData.kpiSubmissions = subs;
+    giteeWrite();
+  }
+  localStorage.setItem(KPI_KEY, JSON.stringify(subs));
+}
+
 function kpiInit(){
   if(document.getElementById('kpiTbody').children.length>0) return;
   kpiBuildTable();
@@ -906,10 +934,10 @@ function kpiSave(){
   const totalW=d.indicators.reduce((s,i)=>s+i.weight,0);
   if(Math.abs(totalW-100)>0.1) return alert('\u6743\u91cd\u5408\u8ba1\u5fc5\u987b\u4e3a100%\uff08\u5f53\u524d\u4e3a'+totalW+'%\uff09\uff0c\u8bf7\u8c03\u6574');
 
-  const subs=JSON.parse(localStorage.getItem(KPI_KEY)||'[]');
+  const subs = getKPISubs();
   subs.unshift(d);
-  localStorage.setItem(KPI_KEY,JSON.stringify(subs));
-  alert('✅ KPI评分已保存！');
+  saveKPISubs(subs);
+  alert('✅ KPI评分已保存！\nHR将在后台收到你的评分记录。');
 }
 function kpiExport(){
   const d=kpiGetData();
@@ -989,7 +1017,7 @@ function adminRender(sub){
     }
     container.innerHTML=apps.map((a,i)=>'<div class="admin-item"><div class="admin-item-header"><span class="admin-item-name">'+a.name+' ('+a.empId+')</span><span class="admin-item-time">'+new Date(a.time).toLocaleString('zh-CN')+'</span></div><div class="admin-item-body">📱 '+a.phone+'<br>状态：<strong style="color:'+(a.status==='已完成'?'var(--primary)':'var(--warning)')+'">'+a.status+'</strong></div><div class="admin-item-actions">'+(a.status==='待处理'?'<button class="btn-sm primary admin-ob-complete" data-idx="'+i+'">标记完成</button>':'')+'<button class="btn-sm outline admin-ob-delete" data-idx="'+i+'">删除</button></div></div>').join('');
   } else if(sub==='kpi'){
-    const subs=JSON.parse(localStorage.getItem(KPI_KEY)||'[]');
+    const subs = getKPISubs();
     if(subs.length===0){
       container.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div>暂无KPI评分记录</div>';
       return;
@@ -1036,9 +1064,9 @@ function adminViewKPI(idx){
 }
 function adminDeleteKPI(idx){
   if(!confirm('确定删除这条KPI评分？')) return;
-  const subs=JSON.parse(localStorage.getItem(KPI_KEY)||'[]');
+  const subs = getKPISubs();
   subs.splice(idx,1);
-  localStorage.setItem(KPI_KEY,JSON.stringify(subs));
+  saveKPISubs(subs);
   adminRender('kpi');
 }
 function adminChangePwd(){
@@ -1050,20 +1078,101 @@ function adminChangePwd(){
   alert('✅ 密码已修改！');
   adminRender('settings');
 }
+
+// ========== 7.5 NOTIFICATION SYSTEM ==========
+var _origTitle = document.title;
+var _titleBlinkTimer = null;
+var _prevCounts = { chat: -1, ob: -1, kpi: -1 };
+var _newFlags = { chat: false, ob: false, kpi: false };
+
+function playNotifySound(){
+  try{
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+  }catch(e){}
+}
+function startTitleBlink(msg){
+  if(_titleBlinkTimer) clearInterval(_titleBlinkTimer);
+  _titleBlinkTimer = setInterval(function(){
+    document.title = (document.title === _origTitle) ? ('🔔 ' + msg) : _origTitle;
+  }, 1000);
+}
+function stopTitleBlink(){
+  if(_titleBlinkTimer){ clearInterval(_titleBlinkTimer); _titleBlinkTimer = null; }
+  document.title = _origTitle;
+}
+function countEmployeeMsgs(chats){
+  var count = 0;
+  Object.keys(chats).forEach(function(name){
+    (chats[name]||[]).forEach(function(m){
+      if(m.role === 'employee') count++;
+    });
+  });
+  return count;
+}
+function checkNewData(){
+  var newChat = countEmployeeMsgs(_cloudData.chats);
+  var newOB = _cloudData.obApplications.length;
+  var newKPI = (_cloudData.kpiSubmissions||[]).length;
+
+  if(_prevCounts.chat < 0){
+    _prevCounts = { chat: newChat, ob: newOB, kpi: newKPI };
+    return;
+  }
+
+  var msgs = [];
+  if(newChat > _prevCounts.chat){ msgs.push('新消息'); _newFlags.chat = true; }
+  if(newOB > _prevCounts.ob){ msgs.push('新OB申请'); _newFlags.ob = true; }
+  if(newKPI > _prevCounts.kpi){ msgs.push('新KPI评分'); _newFlags.kpi = true; }
+
+  _prevCounts = { chat: newChat, ob: newOB, kpi: newKPI };
+  updateNotifyDots();
+
+  if(msgs.length > 0){
+    playNotifySound();
+    startTitleBlink(msgs.join(' + '));
+  }
+}
+function updateNotifyDots(){
+  var d;
+  d = document.getElementById('dot-chat'); if(d) d.classList.toggle('show', _newFlags.chat);
+  d = document.getElementById('dot-ob'); if(d) d.classList.toggle('show', _newFlags.ob);
+  d = document.getElementById('dot-kpi'); if(d) d.classList.toggle('show', _newFlags.kpi);
+}
+function clearNotifyDot(type){
+  _newFlags[type] = false;
+  updateNotifyDots();
+}
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden) stopTitleBlink();
+});
+
 // ========== 8. INIT ==========
 (function(){
   // --- Cloud data init ---
   function initFromLocal(){
     try{ _cloudData.chats = JSON.parse(localStorage.getItem(CHAT_KEY)||'{}'); }catch(e){ _cloudData.chats = {}; }
     try{ _cloudData.obApplications = JSON.parse(localStorage.getItem(OB_KEY)||'[]'); }catch(e){ _cloudData.obApplications = []; }
+    try{ _cloudData.kpiSubmissions = JSON.parse(localStorage.getItem(KPI_KEY)||'[]'); }catch(e){ _cloudData.kpiSubmissions = []; }
   }
   function initFromCloud(){
     if(!USE_CLOUD){ initFromLocal(); return; }
     giteeRead().then(function(data){
       localStorage.setItem(CHAT_KEY, JSON.stringify(data.chats || {}));
       localStorage.setItem(OB_KEY, JSON.stringify(data.obApplications || []));
+      localStorage.setItem(KPI_KEY, JSON.stringify(data.kpiSubmissions || []));
+      checkNewData();
       var adminPanel = document.getElementById('adminPanel');
-      if(adminPanel && adminPanel.style.display === 'block'){
+      if(adminPanel && adminPanel.classList.contains('show')){
         var activeSub = document.querySelector('.admin-subtab.active');
         if(activeSub) adminRender(activeSub.getAttribute('data-asub'));
       }
@@ -1072,6 +1181,19 @@ function adminChangePwd(){
 
   initFromLocal();
   if(USE_CLOUD) initFromCloud();
+
+  // --- WeChat guide ---
+  if(/MicroMessenger/i.test(navigator.userAgent)){
+    var guide = document.getElementById('wechatGuide');
+    if(guide && !sessionStorage.getItem('wg_closed')){
+      guide.classList.add('show');
+    }
+    var gClose = document.getElementById('wechatGuideClose');
+    if(gClose) gClose.addEventListener('click', function(){
+      guide.classList.remove('show');
+      sessionStorage.setItem('wg_closed','1');
+    });
+  }
 
   var _refreshTimer = null;
   var _chatRefreshTimer = null;
@@ -1126,7 +1248,11 @@ function adminChangePwd(){
   if(el) el.addEventListener('click',function(e){
     var btn=e.target.closest('.admin-subtab');
     if(!btn) return;
-    adminRender(btn.dataset.asub);
+    var asub=btn.dataset.asub;
+    adminRender(asub);
+    if(asub==='chat') clearNotifyDot('chat');
+    if(asub==='ob') clearNotifyDot('ob');
+    if(asub==='kpi') clearNotifyDot('kpi');
   });
 
   // --- Admin content event delegation (dynamic buttons) ---
