@@ -2,12 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="HR自助服务">
-<meta name="theme-color" content="#07c160">
-<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>HR自助服务</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -15,7 +10,7 @@
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
 
 /* Header */
-.header{background:linear-gradient(135deg,#07c160,#06ad56);padding:14px 16px 0;padding-top:calc(14px + env(safe-area-inset-top,0px));position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(7,193,96,.25)}
+.header{background:linear-gradient(135deg,#07c160,#06ad56);padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(7,193,96,.25)}
 .header h1{color:#fff;font-size:18px;font-weight:600;text-align:center;padding-bottom:12px}
 
 /* Tab Nav */
@@ -31,7 +26,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 
 /* ====== Q&A Tab ====== */
 .search-box{position:relative;margin-bottom:14px}
-.search-box input{width:100%;padding:12px 44px 12px 16px;border:2px solid var(--border);border-radius:var(--radius);font-size:16px;outline:none;transition:.2s;background:var(--card-bg);font-family:inherit}
+.search-box input{width:100%;padding:12px 44px 12px 16px;border:2px solid var(--border);border-radius:var(--radius);font-size:15px;outline:none;transition:.2s;background:var(--card-bg);font-family:inherit}
 .search-box input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(7,193,96,.1)}
 .search-box .search-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--text-tertiary)}
 .quick-examples{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
@@ -59,12 +54,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 
 /* ====== Chat Tab ====== */
 .chat-init{text-align:center;padding:20px}
-.chat-init input{width:100%;max-width:300px;padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius);font-size:16px;outline:none;text-align:center;font-family:inherit;margin-bottom:12px}
+.chat-init input{width:100%;max-width:300px;padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius);font-size:15px;outline:none;text-align:center;font-family:inherit;margin-bottom:12px}
 .chat-init input:focus{border-color:var(--primary)}
 .chat-init .btn-start{padding:10px 40px;background:var(--primary);color:#fff;border:none;border-radius:20px;font-size:15px;cursor:pointer;font-family:inherit}
 
-.chat-container{display:flex;flex-direction:column;height:calc(100vh - 180px);height:calc(100dvh - 180px);min-height:400px}
-.chat-messages{flex:1;overflow-y:auto;padding:0 4px;-webkit-overflow-scrolling:touch}
+.chat-container{display:flex;flex-direction:column;height:calc(100vh - 180px);min-height:400px}
+.chat-messages{flex:1;overflow-y:auto;padding:0 4px}
 .chat-msg{display:flex;margin-bottom:12px}
 .chat-msg.employee{justify-content:flex-end}
 .chat-msg.hr{justify-content:flex-start}
@@ -76,10 +71,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 .chat-msg.hr .meta{text-align:left;padding-left:4px}
 .chat-msg .system-msg{text-align:center;font-size:12px;color:var(--text-secondary);background:rgba(0,0,0,.04);padding:6px 12px;border-radius:12px;margin:8px auto;display:inline-block}
 
-.chat-input-box{display:flex;gap:8px;padding:10px 0;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--border)}
-.chat-input-box textarea{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:20px;font-size:16px;outline:none;resize:none;height:44px;line-height:24px;font-family:inherit}
+.chat-input-box{display:flex;gap:8px;padding:10px 0;background:var(--bg);border-top:1px solid var(--border)}
+.chat-input-box textarea{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:20px;font-size:14px;outline:none;resize:none;height:40px;line-height:20px;font-family:inherit}
 .chat-input-box textarea:focus{border-color:var(--primary)}
-.chat-input-box .btn-send{width:44px;height:44px;border-radius:50%;background:var(--primary);color:#fff;border:none;font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.chat-input-box .btn-send{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;border:none;font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .chat-notice{text-align:center;font-size:12px;color:var(--text-secondary);padding:8px;background:var(--primary-light);border-radius:var(--radius-sm);margin-top:8px}
 
 /* ====== OB Tab ====== */
@@ -89,7 +84,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 .ob-form .form-group{margin-bottom:14px}
 .ob-form label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text)}
 .ob-form label .required{color:var(--danger)}
-.ob-form input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:16px;outline:none;font-family:inherit;transition:.2s}
+.ob-form input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;outline:none;font-family:inherit;transition:.2s}
 .ob-form input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(7,193,96,.1)}
 .ob-form .btn-submit{width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:.2s}
 .ob-form .btn-submit:hover{background:var(--primary-dark)}
@@ -149,7 +144,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 .admin-header h2{font-size:16px}
 .admin-header .btn-close{background:rgba(255,255,255,.2);color:#fff;border:none;padding:6px 14px;border-radius:16px;cursor:pointer;font-size:13px;font-family:inherit}
 .admin-login{text-align:center;padding:60px 20px}
-.admin-login input{width:100%;max-width:280px;padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius);font-size:16px;outline:none;text-align:center;font-family:inherit;margin-bottom:12px}
+.admin-login input{width:100%;max-width:280px;padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius);font-size:15px;outline:none;text-align:center;font-family:inherit;margin-bottom:12px}
 .admin-login .btn-login{padding:10px 40px;background:var(--primary);color:#fff;border:none;border-radius:20px;font-size:15px;cursor:pointer;font-family:inherit}
 .admin-login .error{color:var(--danger);font-size:13px;margin-top:8px}
 
@@ -159,10 +154,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 .admin-subtab .notify-dot{position:absolute;top:6px;right:25%;width:8px;height:8px;background:var(--danger);border-radius:50%;display:none;animation:pulse 1.5s infinite}
 .admin-subtab .notify-dot.show{display:block}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
-/* 员工端Tab红点 */
-.tab-btn{position:relative}
-.tab-btn .emp-badge{position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;padding:0 4px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;border-radius:9px;display:none;align-items:center;justify-content:center;line-height:18px;animation:pulse 1.5s infinite}
-.tab-btn .emp-badge.show{display:flex}
 .admin-content{padding:16px}
 .admin-item{background:var(--card-bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .admin-item .admin-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -179,6 +170,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 
 .empty-state{text-align:center;padding:40px 20px;color:var(--text-secondary)}
 .empty-state .empty-icon{font-size:48px;margin-bottom:8px}
+
+/* Chat attach & media */
+.btn-attach{width:40px;height:40px;border-radius:50%;background:#fff;color:var(--primary);border:1px solid var(--border);font-size:20px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s}
+.btn-attach:active{background:var(--primary-light)}
+.chat-media-img{max-width:200px;max-height:200px;border-radius:8px;cursor:pointer;display:block;margin-bottom:4px}
+.chat-media-video{max-width:240px;max-height:200px;border-radius:8px;display:block;margin-bottom:4px}
+.chat-upload-progress{font-size:12px;color:var(--text-secondary);padding:8px;text-align:center}
+.chat-file-preview{position:relative;display:inline-block;margin:4px}
+.chat-file-preview .preview-remove{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.admin-item-media{max-width:200px;max-height:150px;border-radius:6px;margin:4px 0;cursor:pointer}
+.admin-item-video{max-width:220px;max-height:150px;border-radius:6px;margin:4px 0}
+.admin-item .btn-sm.danger{background:var(--danger);color:#fff}
+.admin-pwd-warning{background:#fff3cd;border:1px solid #ffeaa7;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#856404;line-height:1.6}
+.admin-pwd-warning strong{color:#d97706}
+.attach-loading{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;margin-right:6px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 @media(min-width:640px){
   .tab-btn{padding:10px 24px;font-size:14px}
@@ -204,7 +211,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
   <h1>HR自助服务中心</h1>
   <nav class="tab-nav" id="tabNav">
     <button class="tab-btn active" data-tab="qa">智能问答</button>
-    <button class="tab-btn" data-tab="chat">人工客服<span class="emp-badge" id="empChatBadge">0</span></button>
+    <button class="tab-btn" data-tab="chat">人工客服</button>
     <button class="tab-btn" data-tab="ob">OB申请</button>
     <button class="tab-btn" data-tab="kpi">KPI评分</button>
   </nav>
@@ -231,8 +238,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
     <div class="chat-container">
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input-box">
+        <button class="btn-attach" id="chatAttachBtn">📎</button>
         <textarea id="chatInput" placeholder="输入你的问题..." rows="1"></textarea>
         <button class="btn-send" id="chatSendBtn">➤</button>
+        <input type="file" id="chatFileInput" accept="image/*,video/*" style="display:none">
       </div>
     </div>
     <div class="chat-notice">💡 HR工作时间内回复，一般不超过2小时。紧急问题请直接微信/电话联系。</div>
@@ -329,7 +338,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
       <input type="password" id="adminPwd" placeholder="管理密码" autocomplete="off">
       <br><button class="btn-login" id="adminLoginBtn">登录</button>
       <div class="error" id="adminError"></div>
-      <p style="margin-top:20px;font-size:11px;color:var(--text-tertiary)">默认密码：admin123（登录后可在设置中修改）</p>
+      <p style="margin-top:20px;font-size:11px;color:var(--text-tertiary)">密码在云端同步，仅管理员可登录</p>
     </div>
   </div>
   <div id="adminMain" style="display:none">
@@ -340,6 +349,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
       <button class="admin-subtab" data-asub="settings">⚙️ 设置</button>
     </div>
     <div class="admin-content" id="adminContent"></div>
+    <input type="file" id="adminFileInput" accept="image/*,video/*" style="display:none">
   </div>
 </div>
 
@@ -355,7 +365,7 @@ var GITEE_CONFIG = {
 var USE_CLOUD = true;
 
 // 内存缓存（云端异步读取后存入，后续读写都同步）
-var _cloudData = { chats: {}, obApplications: [], kpiSubmissions: [] };
+var _cloudData = { chats: {}, obApplications: [], kpiSubmissions: [], adminPwd: null };
 var _cloudSHA = null;
 
 // --- Base64 UTF-8 helpers ---
@@ -375,6 +385,7 @@ function giteeRead(){
       if(parsed.chats) _cloudData.chats = parsed.chats;
       if(parsed.obApplications) _cloudData.obApplications = parsed.obApplications;
       if(parsed.kpiSubmissions) _cloudData.kpiSubmissions = parsed.kpiSubmissions;
+      if(parsed.adminPwd !== undefined) _cloudData.adminPwd = parsed.adminPwd;
     }
     return _cloudData;
   }).catch(function(e){ console.log('Cloud read failed:', e); return _cloudData; });
@@ -503,9 +514,10 @@ tabNav.addEventListener('click', function(e){
   document.getElementById('tab-'+tid).classList.add('active');
   if(tid==='chat'){
     chatLoad();
-    // 切到聊天Tab时清除红点，更新HR消息计数基线
-    _empLastHRCount = countHRMsgsForUser(chatName);
-    clearEmpBadge();
+    // 清除聊天Tab红点
+    var badge = btn.querySelector('.badge');
+    if(badge) badge.remove();
+    stopTitleBlink();
   }
   if(tid==='kpi') kpiInit();
 });
@@ -725,6 +737,166 @@ document.addEventListener('keydown',function(e){ if(e.ctrlKey&&e.key==='k'){ e.p
 // ========== 4. CHAT ENGINE ==========
 const CHAT_KEY = 'hr_chat_data';
 let chatName = '';
+var _lastHrMsgCount = -1; // 员工端：跟踪HR回复数量（通知用）
+
+// --- Render message content (text + media) ---
+function renderMessageContent(m){
+  var html='';
+  if(m.media){
+    if(m.media.type==='image'){
+      html+='<img src="'+m.media.url+'" class="chat-media-img" onclick="window.open(this.src)" loading="lazy">';
+    } else if(m.media.type==='video'){
+      html+='<video src="'+m.media.url+'" class="chat-media-video" controls preload="metadata"></video>';
+    }
+  }
+  if(m.text){
+    html+=m.text.replace(/\n/g,'<br>');
+  }
+  return html;
+}
+
+// --- Render admin message content (compact) ---
+function renderAdminMsgContent(m){
+  var html='';
+  if(m.media){
+    if(m.media.type==='image'){
+      html+='<img src="'+m.media.url+'" class="admin-item-media" onclick="window.open(this.src)" loading="lazy">';
+    } else if(m.media.type==='video'){
+      html+='<video src="'+m.media.url+'" class="admin-item-video" controls preload="metadata"></video>';
+    }
+  }
+  if(m.text){
+    html+=m.text.replace(/\n/g,'<br>');
+  }
+  return html;
+}
+
+// --- Media upload to Gitee repo ---
+function uploadMediaToGitee(base64Data, filename, callback){
+  var path = 'media/' + filename;
+  var url = 'https://gitee.com/api/v5/repos/' + GITEE_CONFIG.owner + '/' + GITEE_CONFIG.repo + '/contents/' + path;
+  var body = {
+    access_token: GITEE_CONFIG.token,
+    content: base64Data,
+    message: 'upload media ' + filename
+  };
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data && data.content && data.content.download_url){
+        callback(data.content.download_url);
+      } else if(data && data.message){
+        console.log('Upload error:', data.message);
+        callback(null, data.message);
+      } else {
+        callback(null, 'unknown error');
+      }
+    })
+    .catch(function(e){ console.log('Upload failed:', e); callback(null, e.toString()); });
+}
+
+// --- Compress image before upload ---
+function compressImage(file, callback){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var img = new Image();
+    img.onload = function(){
+      var canvas = document.createElement('canvas');
+      var maxW = 1280, maxH = 1280;
+      var w = img.width, h = img.height;
+      if(w > maxW){ h = h * maxW / w; w = maxW; }
+      if(h > maxH){ w = w * maxH / h; h = maxH; }
+      canvas.width = w;
+      canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(function(blob){
+        var r2 = new FileReader();
+        r2.onload = function(e2){
+          var base64 = e2.target.result.split(',')[1];
+          callback(base64, 'image/jpeg');
+        };
+        r2.readAsDataURL(blob);
+      }, 'image/jpeg', 0.7);
+    };
+    img.onerror = function(){ callback(null); };
+    img.src = e.target.result;
+  };
+  reader.onerror = function(){ callback(null); };
+  reader.readAsDataURL(file);
+}
+
+// --- Read video as base64 ---
+function readVideoAsBase64(file, callback){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var base64 = e.target.result.split(',')[1];
+    callback(base64);
+  };
+  reader.onerror = function(){ callback(null); };
+  reader.readAsDataURL(file);
+}
+
+// --- Handle file selection for chat media ---
+var _chatFileCallback = null; // set when selecting file for employee or admin
+
+function handleMediaFile(file, callback){
+  if(!file) return;
+  var isImage = file.type.startsWith('image/');
+  var isVideo = file.type.startsWith('video/');
+
+  if(!isImage && !isVideo){
+    alert('只支持图片和视频文件');
+    return;
+  }
+
+  // Size check: images 10MB, videos 20MB (before base64)
+  if(isImage && file.size > 10*1024*1024){
+    alert('图片不能超过10MB');
+    return;
+  }
+  if(isVideo && file.size > 20*1024*1024){
+    alert('视频不能超过20MB');
+    return;
+  }
+
+  var filename = Date.now() + '_' + Math.random().toString(36).substr(2,8) + (isImage ? '.jpg' : '.mp4');
+
+  if(isImage){
+    compressImage(file, function(base64, mime){
+      if(!base64){ alert('图片处理失败'); return; }
+      callback('uploading');
+      uploadMediaToGitee(base64, filename, function(url, err){
+        if(url){
+          callback('done', { type:'image', url:url });
+        } else {
+          callback('error', null, err);
+        }
+      });
+    });
+  } else {
+    // For video, check size more carefully (base64 will be ~1.33x)
+    if(file.size > 5*1024*1024){
+      if(!confirm('视频较大（'+(file.size/1024/1024).toFixed(1)+'MB），上传可能需要一些时间，是否继续？')){
+        return;
+      }
+    }
+    readVideoAsBase64(file, function(base64){
+      if(!base64){ alert('视频处理失败'); return; }
+      callback('uploading');
+      uploadMediaToGitee(base64, filename, function(url, err){
+        if(url){
+          callback('done', { type:'video', url:url });
+        } else {
+          callback('error', null, err);
+        }
+      });
+    });
+  }
+}
 
 // 内存缓存优先：读缓存(同步)，写同时写缓存+Gitee+localStorage
 function getChatData(){
@@ -740,23 +912,17 @@ function saveChatData(d){
 }
 
 function chatLoad(){
-  if(chatName){
-    document.getElementById('chatInit').style.display='none';
-    document.getElementById('chatMain').style.display='block';
-    _empLastHRCount = countHRMsgsForUser(chatName);
-    clearEmpBadge();
-    chatRender();
-  }
+  if(chatName){ document.getElementById('chatInit').style.display='none'; document.getElementById('chatMain').style.display='block'; chatRender(); }
 }
 function chatStart(){
   const n = document.getElementById('chatNameInput').value.trim();
   if(!n) return alert('请输入姓名');
   chatName = n;
+  // 初始化HR消息计数，避免对已有回复误报通知
+  var existingMsgs = getChatData()[chatName] || [];
+  _lastHrMsgCount = existingMsgs.filter(function(m){ return m.role==='hr'; }).length;
   document.getElementById('chatInit').style.display='none';
   document.getElementById('chatMain').style.display='block';
-  // 初始化HR消息计数基线，避免历史消息触发通知
-  _empLastHRCount = countHRMsgsForUser(chatName);
-  clearEmpBadge();
   chatRender();
 }
 function chatRender(){
@@ -769,7 +935,7 @@ function chatRender(){
     container.innerHTML=msgs.map(m=>{
       if(m.role==='system') return '<div class="chat-msg"><div class="system-msg">'+m.text+'</div></div>';
       const cls=m.role==='employee'?'employee':'hr';
-      return '<div class="chat-msg '+cls+'"><div><div class="bubble">'+m.text.replace(/\n/g,'<br>')+'</div><div class="meta">'+m.time+'</div></div></div>';
+      return '<div class="chat-msg '+cls+'"><div><div class="bubble">'+renderMessageContent(m)+'</div><div class="meta">'+m.time+'</div></div></div>';
     }).join('');
   }
   container.scrollTop=container.scrollHeight;
@@ -792,6 +958,38 @@ function chatSend(){
     saveChatData(d2);
     chatRender();
   },500);
+}
+
+// Employee send media
+function chatSendMedia(file){
+  if(!chatName){ alert('请先开始对话'); return; }
+  var sendBtn = document.getElementById('chatSendBtn');
+  var attachBtn = document.getElementById('chatAttachBtn');
+  var origHtml = attachBtn.innerHTML;
+  attachBtn.innerHTML = '<span class="attach-loading"></span>';
+  attachBtn.disabled = true;
+
+  handleMediaFile(file, function(status, media, err){
+    if(status==='uploading'){
+      attachBtn.innerHTML = '<span class="attach-loading"></span>';
+      return;
+    }
+    if(status==='done' && media){
+      var data=getChatData();
+      if(!data[chatName]) data[chatName]=[];
+      var now=new Date();
+      var ts=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0')+' '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+      data[chatName].push({role:'employee',text:'',time:ts,media:media});
+      saveChatData(data);
+      chatRender();
+      attachBtn.innerHTML = origHtml;
+      attachBtn.disabled = false;
+    } else {
+      attachBtn.innerHTML = origHtml;
+      attachBtn.disabled = false;
+      alert('上传失败：'+(err||'未知错误')+'\n\n如果多次失败，请尝试使用更小的文件。');
+    }
+  });
 }
 // ========== 5. OB APPLICATION ==========
 const OB_KEY = 'hr_ob_applications';
@@ -992,7 +1190,12 @@ function kpiReset(){
 // ========== 7. ADMIN PANEL ==========
 const ADMIN_PWD_KEY = 'hr_admin_password';
 const ADMIN_AUTH_KEY = 'hr_admin_authed';
-function getAdminPwd(){ return localStorage.getItem(ADMIN_PWD_KEY)||'admin123'; }
+function getAdminPwd(){
+  // 优先使用云端密码（跨设备同步），其次本地存储，最后默认密码
+  if(_cloudData.adminPwd) return _cloudData.adminPwd;
+  return localStorage.getItem(ADMIN_PWD_KEY) || 'admin123';
+}
+function isAdminPwdDefault(){ return !_cloudData.adminPwd && !localStorage.getItem(ADMIN_PWD_KEY); }
 function adminOpen(){
   document.getElementById('adminPanel').classList.add('show');
   if(sessionStorage.getItem(ADMIN_AUTH_KEY)==='1'){ adminShowMain(); }
@@ -1009,6 +1212,11 @@ function adminShowMain(){
   document.getElementById('adminLogin').style.display='none';
   document.getElementById('adminMain').style.display='block';
   adminRender('chat');
+  if(isAdminPwdDefault()){
+    setTimeout(function(){
+      alert('⚠️ 安全提醒：您当前仍使用默认密码 admin123，任何人都可以登录后台！\n请立即在「设置」中修改密码，修改后所有设备将同步使用新密码。');
+    },500);
+  }
 }
 function adminRender(sub){
   const container=document.getElementById('adminContent');
@@ -1022,14 +1230,32 @@ function adminRender(sub){
       container.innerHTML='<div class="empty-state"><div class="empty-icon">💬</div>暂无客服消息<br><span style="font-size:12px">员工通过"人工客服"发送的消息会显示在这里</span></div>';
       return;
     }
+    // 按最新消息时间排序（新消息置顶）
+    names.sort(function(a,b){
+      var msgsA=data[a], msgsB=data[b];
+      var timeA=msgsA[msgsA.length-1].time || '';
+      var timeB=msgsB[msgsB.length-1].time || '';
+      return timeB.localeCompare(timeA);
+    });
     let html='';
     names.forEach(name=>{
       const msgs=data[name];
       const lastMsg=msgs[msgs.length-1];
-      const unread=msgs.filter(m=>m.role==='employee').length;
-      html+='<div class="admin-item"><div class="admin-item-header"><span class="admin-item-name">👤 '+name+' ('+unread+'条消息)</span><span class="admin-item-time">'+lastMsg.time+'</span></div>';
-      html+='<div class="admin-item-body">'+msgs.map(m=>'<div style="margin:4px 0;padding-left:'+(m.role==='hr'?'16px':'0')+'"><strong>'+(m.role==='hr'?'HR回复':'员工')+'：</strong>'+m.text.replace(/\n/g,'<br>')+'</div>').join('')+'</div>';
-      html+='<div class="chat-reply-box"><input type="text" id="reply_'+name+'" placeholder="回复 '+name+'..."><button class="btn-sm primary admin-reply-btn" data-name="'+name+'">回复</button></div></div>';
+      const empCount=msgs.filter(m=>m.role==='employee').length;
+      html+='<div class="admin-item" id="admin-chat-'+name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g,'')+'">';
+      html+='<div class="admin-item-header"><span class="admin-item-name">👤 '+name+' ('+empCount+'条消息)</span><span class="admin-item-time">'+lastMsg.time+'</span></div>';
+      html+='<div class="admin-item-body">'+msgs.map(m=>{
+        var prefix='<strong>'+(m.role==='hr'?'HR回复':'员工')+'：</strong>';
+        var content=renderAdminMsgContent(m);
+        return '<div style="margin:4px 0;padding-left:'+(m.role==='hr'?'16px':'0')+'">'+prefix+content+'</div>';
+      }).join('')+'</div>';
+      html+='<div class="chat-reply-box">';
+      html+='<button class="btn-sm outline admin-attach-btn" data-name="'+name+'" style="flex-shrink:0;padding:6px 10px">📎</button>';
+      html+='<input type="text" id="reply_'+name+'" placeholder="回复 '+name+'...">';
+      html+='<button class="btn-sm primary admin-reply-btn" data-name="'+name+'">回复</button>';
+      html+='</div>';
+      html+='<div class="admin-item-actions" style="margin-top:6px"><button class="btn-sm danger admin-chat-delete" data-name="'+name+'">🗑 删除对话</button></div>';
+      html+='</div>';
     });
     container.innerHTML=html;
   } else if(sub==='ob'){
@@ -1047,7 +1273,10 @@ function adminRender(sub){
     }
     container.innerHTML=subs.map((s,i)=>'<div class="admin-item"><div class="admin-item-header"><span class="admin-item-name">'+s.name+' - '+s.position+'</span><span class="admin-item-time">'+s.month+'</span></div><div class="admin-item-body">渠道：'+s.channel+' | 指标数：'+s.indicators.length+' | 总权重：'+s.indicators.reduce((sum,ind)=>sum+ind.weight,0)+'%</div><div class="admin-item-actions"><button class="btn-sm primary admin-kpi-view" data-idx="'+i+'">查看详情</button><button class="btn-sm outline admin-kpi-delete" data-idx="'+i+'">删除</button></div></div>').join('');
   } else if(sub==='settings'){
-    container.innerHTML='<div class="ob-form"><div class="form-title">修改管理密码</div><div class="form-group"><label>新密码</label><input type="password" id="newPwd" placeholder="输入新密码" autocomplete="off"></div><div class="form-group"><label>确认密码</label><input type="password" id="newPwd2" placeholder="再次输入新密码" autocomplete="off"></div><button class="btn-submit" id="adminChangePwdBtn">修改密码</button></div>';
+    var pwdWarning = isAdminPwdDefault()
+      ? '<div class="admin-pwd-warning">⚠️ <strong>安全风险！</strong>当前仍在使用默认密码 admin123，任何人都可以登录后台。请立即修改密码！</div>'
+      : '<div style="background:var(--primary-light);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--primary-dark)">✅ 密码已在云端同步，所有设备使用同一密码</div>';
+    container.innerHTML='<div class="ob-form">'+pwdWarning+'<div class="form-title">修改管理密码</div><div class="form-desc" style="font-size:12px;margin-bottom:14px">修改后密码将同步到云端，所有设备均需使用新密码登录。</div><div class="form-group"><label>新密码（至少6位）</label><input type="password" id="newPwd" placeholder="输入新密码" autocomplete="off"></div><div class="form-group"><label>确认密码</label><input type="password" id="newPwd2" placeholder="再次输入新密码" autocomplete="off"></div><button class="btn-submit" id="adminChangePwdBtn">修改密码</button></div>';
   }
 }
 function adminReply(name){
@@ -1060,6 +1289,24 @@ function adminReply(name){
   data[name].push({role:'hr',text,time:ts});
   saveChatData(data);
   inp.value='';
+  adminRender('chat');
+}
+function adminDeleteChat(name){
+  if(!confirm('确定删除与 '+name+' 的全部对话记录？此操作不可恢复。')) return;
+  const data=getChatData();
+  delete data[name];
+  saveChatData(data);
+  adminRender('chat');
+}
+// Admin send media to a specific employee
+var _adminAttachName = null;
+function adminSendMedia(name, media){
+  const data=getChatData();
+  if(!data[name]) data[name]=[];
+  const now=new Date();
+  const ts=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0')+' '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  data[name].push({role:'hr',text:'',time:ts,media:media});
+  saveChatData(data);
   adminRender('chat');
 }
 function adminCompleteOB(idx){
@@ -1076,7 +1323,7 @@ function adminDeleteOB(idx){
   adminRender('ob');
 }
 function adminViewKPI(idx){
-  const subs=JSON.parse(localStorage.getItem(KPI_KEY)||'[]');
+  const subs=getKPISubs();
   const s=subs[idx];
   let text='【'+s.month+'月度工作考核】\n';
   text+='姓名：'+s.name+'  岗位：'+s.position+'  渠道：'+s.channel+'\n\n';
@@ -1093,12 +1340,16 @@ function adminDeleteKPI(idx){
   adminRender('kpi');
 }
 function adminChangePwd(){
-  const p1=document.getElementById('newPwd').value;
-  const p2=document.getElementById('newPwd2').value;
+  var p1=document.getElementById('newPwd').value;
+  var p2=document.getElementById('newPwd2').value;
   if(!p1) return alert('请输入新密码');
+  if(p1.length<6) return alert('密码至少6位');
   if(p1!==p2) return alert('两次密码不一致');
+  // 写入云端，所有设备同步
+  _cloudData.adminPwd = p1;
   localStorage.setItem(ADMIN_PWD_KEY,p1);
-  alert('✅ 密码已修改！');
+  giteeWrite();
+  alert('✅ 密码已修改！\n\n所有设备将使用新密码登录，默认密码 admin123 已失效。');
   adminRender('settings');
 }
 
@@ -1179,64 +1430,6 @@ document.addEventListener('visibilitychange', function(){
   if(!document.hidden) stopTitleBlink();
 });
 
-// ========== 7.6 EMPLOYEE NOTIFICATION ==========
-var _empLastHRCount = -1; // 上次已知HR消息数
-var _empUnreadHR = 0;     // 未读HR回复数
-
-function countHRMsgsForUser(name){
-  if(!name) return 0;
-  var data = getChatData();
-  var msgs = data[name] || [];
-  return msgs.filter(function(m){ return m.role === 'hr'; }).length;
-}
-
-function checkEmployeeNotify(){
-  if(!chatName) return;
-  var currentHRCount = countHRMsgsForUser(chatName);
-  if(_empLastHRCount < 0){
-    _empLastHRCount = currentHRCount;
-    return;
-  }
-  if(currentHRCount > _empLastHRCount){
-    var diff = currentHRCount - _empLastHRCount;
-    _empUnreadHR += diff;
-    _empLastHRCount = currentHRCount;
-    // 播放提示音
-    playNotifySound();
-    // 手机震动
-    if(navigator.vibrate){ navigator.vibrate([200,100,200]); }
-    // 标题闪烁
-    startTitleBlink('HR回复了消息');
-    // 更新红点
-    updateEmpBadge();
-    // 如果当前在聊天Tab，直接刷新渲染
-    var chatTab = document.getElementById('tab-chat');
-    if(chatTab && chatTab.classList.contains('active')){
-      chatRender();
-      _empUnreadHR = 0;
-      updateEmpBadge();
-      stopTitleBlink();
-    }
-  }
-}
-
-function updateEmpBadge(){
-  var badge = document.getElementById('empChatBadge');
-  if(!badge) return;
-  if(_empUnreadHR > 0){
-    badge.textContent = _empUnreadHR > 99 ? '99+' : String(_empUnreadHR);
-    badge.classList.add('show');
-  } else {
-    badge.classList.remove('show');
-  }
-}
-
-function clearEmpBadge(){
-  _empUnreadHR = 0;
-  updateEmpBadge();
-  stopTitleBlink();
-}
-
 // ========== 8. INIT ==========
 (function(){
   // --- Cloud data init ---
@@ -1288,21 +1481,42 @@ function clearEmpBadge(){
     if(_refreshTimer){ clearInterval(_refreshTimer); _refreshTimer = null; }
   });
 
-  // 员工端全Tab轮询：每10秒拉取最新消息，检测HR新回复
+  // 员工端聊天自动刷新：每10秒拉取最新消息（全Tab运行）
   if(USE_CLOUD){
     _chatRefreshTimer = setInterval(function(){
-      var adminPanel = document.getElementById('adminPanel');
-      // 管理后台打开时不跑员工轮询
-      if(adminPanel && adminPanel.classList.contains('show')) return;
-      giteeRead().then(function(){
-        // 检测HR新回复（声音/震动/红点）
-        checkEmployeeNotify();
-        // 如果当前在聊天Tab，刷新渲染
-        var chatTab = document.getElementById('tab-chat');
-        if(chatTab && chatTab.classList.contains('active') && chatName){
-          chatRender();
-        }
-      });
+      // 只在不是管理后台时刷新
+      if(!document.getElementById('adminPanel').classList.contains('show')){
+        giteeRead().then(function(){
+          if(chatName){
+            var msgs = (_cloudData.chats[chatName]||[]);
+            var hrCount = msgs.filter(function(m){ return m.role==='hr'; }).length;
+            // 检测HR新回复
+            if(_lastHrMsgCount >= 0 && hrCount > _lastHrMsgCount){
+              playNotifySound();
+              try{ navigator.vibrate([200,100,200]); }catch(e){}
+              var chatTabBtn = document.querySelector('.tab-btn[data-tab="chat"]');
+              if(chatTabBtn && !chatTabBtn.classList.contains('active')){
+                startTitleBlink('HR回复了你的消息');
+                if(!chatTabBtn.querySelector('.badge')){
+                  var badge = document.createElement('span');
+                  badge.className = 'badge';
+                  badge.textContent = '新';
+                  chatTabBtn.appendChild(badge);
+                }
+              }
+            }
+            _lastHrMsgCount = hrCount;
+            // 清除红点（在聊天Tab时）
+            var chatTabBtn2 = document.querySelector('.tab-btn[data-tab="chat"]');
+            if(chatTabBtn2 && chatTabBtn2.classList.contains('active')){
+              var b = chatTabBtn2.querySelector('.badge');
+              if(b) b.remove();
+              stopTitleBlink();
+            }
+            chatRender();
+          }
+        });
+      }
     }, 10000);
   }
 
@@ -1310,6 +1524,8 @@ function clearEmpBadge(){
   var el;
   el=document.getElementById('chatStartBtn'); if(el) el.addEventListener('click',chatStart);
   el=document.getElementById('chatSendBtn'); if(el) el.addEventListener('click',chatSend);
+  el=document.getElementById('chatAttachBtn'); if(el) el.addEventListener('click',function(){ document.getElementById('chatFileInput').click(); });
+  el=document.getElementById('chatFileInput'); if(el) el.addEventListener('change',function(e){ if(e.target.files[0]){ chatSendMedia(e.target.files[0]); e.target.value=''; } });
   el=document.getElementById('obSubmitBtn'); if(el) el.addEventListener('click',obSubmit);
   el=document.getElementById('obCopyBtn'); if(el) el.addEventListener('click',obCopyInfo);
   el=document.getElementById('obResetBtn'); if(el) el.addEventListener('click',obReset);
@@ -1345,6 +1561,14 @@ function clearEmpBadge(){
     var btn;
     btn=e.target.closest('.admin-reply-btn');
     if(btn){ adminReply(btn.dataset.name); return; }
+    btn=e.target.closest('.admin-attach-btn');
+    if(btn){
+      _adminAttachName = btn.dataset.name;
+      document.getElementById('adminFileInput').click();
+      return;
+    }
+    btn=e.target.closest('.admin-chat-delete');
+    if(btn){ adminDeleteChat(btn.dataset.name); return; }
     btn=e.target.closest('.admin-ob-complete');
     if(btn){ adminCompleteOB(parseInt(btn.dataset.idx)); return; }
     btn=e.target.closest('.admin-ob-delete');
@@ -1355,6 +1579,32 @@ function clearEmpBadge(){
     if(btn){ adminDeleteKPI(parseInt(btn.dataset.idx)); return; }
     btn=e.target.closest('#adminChangePwdBtn');
     if(btn){ adminChangePwd(); return; }
+  });
+
+  // --- Admin file input for media upload ---
+  el=document.getElementById('adminFileInput');
+  if(el) el.addEventListener('change',function(e){
+    if(!e.target.files[0] || !_adminAttachName) return;
+    var file = e.target.files[0];
+    var name = _adminAttachName;
+    _adminAttachName = null;
+    e.target.value='';
+
+    // Find the attach button and show loading
+    var attachBtns = document.querySelectorAll('.admin-attach-btn');
+    var targetBtn = null;
+    attachBtns.forEach(function(b){ if(b.dataset.name===name) targetBtn=b; });
+    if(targetBtn){ targetBtn.innerHTML='<span class="attach-loading"></span>'; targetBtn.disabled=true; }
+
+    handleMediaFile(file, function(status, media, err){
+      if(status==='uploading') return;
+      if(targetBtn){ targetBtn.innerHTML='📎'; targetBtn.disabled=false; }
+      if(status==='done' && media){
+        adminSendMedia(name, media);
+      } else {
+        alert('上传失败：'+(err||'未知错误'));
+      }
+    });
   });
 
   // --- FAQ card click to expand ---
