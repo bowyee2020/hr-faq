@@ -134,6 +134,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 .kpi-ref-panel .ref-item .ref-name{font-weight:500}
 .kpi-ref-panel .ref-item .ref-desc{color:var(--text-secondary);font-size:11px}
 .kpi-fill-hint{font-size:11px;color:var(--text-secondary);background:#fffbe6;padding:8px 12px;border-radius:6px;margin-bottom:12px;line-height:1.6}
+/* Signature pad */
+.sig-pad-wrap{position:relative;display:inline-block;width:100%}
+.sig-pad-canvas{width:100%;height:80px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:crosshair;touch-action:none;display:block}
+.sig-pad-clear{position:absolute;top:4px;right:4px;padding:2px 8px;font-size:11px;border:1px solid var(--border);border-radius:4px;background:#fff;color:var(--text-secondary);cursor:pointer}
+.sig-pad-hint{font-size:10px;color:var(--text-tertiary);margin-top:2px}
+.sig-display{height:40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+.sig-display img{max-height:38px;max-width:100%}
+/* Dept/Position dropdowns */
+.kpi-dept-row{display:flex;gap:8px;margin-bottom:12px}
+.kpi-dept-row .info-item{flex:1;min-width:120px}
 
 /* KPI mode switcher */
 .kpi-mode-switch{display:flex;gap:0;margin-bottom:14px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--primary)}
@@ -330,10 +340,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
       <h2 id="kpiTitle">月度工作考核</h2>
       <div class="kpi-fill-hint">
         💡 填写提示：<br>
-        1. 每月关键考核指标原则上<strong>不超过3个</strong>，三个月内重点工作权重不作大幅度变更。<br>
-        2. "指标属性"不需要填写更改，只需填写"指标项"，可点击<a href="javascript:void(0)" id="kpiRefLink" style="color:var(--primary);text-decoration:underline">「参考指标」</a>选择。<br>
+        1. 先选择<strong>部门</strong>和<strong>岗位</strong>，再点击<a href="javascript:void(0)" id="kpiRefLink" style="color:var(--primary);text-decoration:underline">「参考指标」</a>选择对应的考核指标。<br>
+        2. 每月关键考核指标原则上<strong>不超过3个</strong>，三个月内重点工作权重不作大幅度变更。<br>
         3. 权重合计必须为<strong>100%</strong>。<br>
-        4. 填写完毕签名后点击「提交给主管评审」，提交后不可修改。
+        4. 填写完毕<strong>手写签名</strong>后点击「提交给主管评审」，提交后不可修改。
       </div>
       <div class="kpi-ref-panel" id="kpiRefPanel">
         <h4>📋 关键指标参考（点击选择）</h4>
@@ -341,7 +351,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
       </div>
       <div class="kpi-info">
         <div class="info-item"><label>被考核人姓名 *</label><input type="text" id="kpiName" placeholder="姓名" autocomplete="off"></div>
-        <div class="info-item"><label>岗位 *</label><input type="text" id="kpiPosition" placeholder="岗位" autocomplete="off"></div>
+        <div class="info-item"><label>部门 *</label>
+          <select id="kpiDept" autocomplete="off">
+            <option value="">请选择部门</option>
+          </select>
+        </div>
+        <div class="info-item"><label>岗位 *</label>
+          <select id="kpiPosition" autocomplete="off" disabled>
+            <option value="">请先选择部门</option>
+          </select>
+        </div>
         <div class="info-item"><label>负责渠道 *</label><input type="text" id="kpiChannel" placeholder="渠道" autocomplete="off"></div>
         <div class="info-item"><label>考核月份</label><input type="month" id="kpiMonth"></div>
         <div class="info-item"><label>直属主管姓名 *</label><input type="text" id="kpiSupervisorName" placeholder="主管姓名" autocomplete="off"></div>
@@ -349,7 +368,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
       <div class="kpi-table-wrap">
         <table class="kpi-table" id="kpiTable">
           <thead>
-            <tr><th style="width:5%">#</th><th style="width:13%">指标项</th><th style="width:8%">指标属性</th><th style="width:15%">关键指标</th><th style="width:17%">评分标准</th><th style="width:8%">权重(%)</th><th style="width:10%">目标数</th><th style="width:10%">已完成数</th><th style="width:8%">达成率</th></tr>
+            <tr><th style="width:4%">序号</th><th style="width:12%">指标项</th><th style="width:7%">指标属性</th><th style="width:14%">关键指标</th><th style="width:16%">评分标准</th><th style="width:7%">权重(%)</th><th style="width:9%">目标数</th><th style="width:9%">已完成数</th><th style="width:7%">达成率</th><th style="width:8%">考评评分</th></tr>
           </thead>
           <tbody id="kpiTbody"></tbody>
         </table>
@@ -362,7 +381,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
         <textarea id="kpiSelfSummary" placeholder="被考核人填写本月工作总结..."></textarea>
       </div>
       <div class="kpi-signatures">
-        <div class="sig-item"><label>被考核人签名 *</label><input type="text" id="kpiSigEmployee" placeholder="被考核人签名" autocomplete="off"></div>
+        <div class="sig-item"><label>被考核人签名 *</label>
+          <div class="sig-pad-wrap">
+            <canvas class="sig-pad-canvas" id="kpiSigCanvas"></canvas>
+            <button class="sig-pad-clear" id="kpiSigClearBtn">清除</button>
+          </div>
+          <div class="sig-pad-hint">请在上方区域内手写签名</div>
+        </div>
       </div>
       <div class="kpi-actions">
         <button class="btn btn-primary" id="kpiSubmitBtn">📤 提交给主管评审</button>
@@ -526,6 +551,20 @@ const KB_RULES = [
   { id: 'r18', category: '通用', triggers: ['多久','几天','多长时间','时效','期限','截止','deadline','什么时候'], answer: '关键时效速查：\n• 补卡：当天内（每月最多3次）\n• 考勤申诉：5个工作日内\n• 工资疑问：收到工资后3个工作日内\n• 急诊补假条：3天内\n• 年假：当年休完，逾期清空', faqLinks: ['d1','d5','d6','d10','d11'] },
   { id: 'r19', category: '考勤打卡', triggers: ['调休','换休','补休','加班调休','换班'], answer: '加班后如安排调休，已调休的时数不能计发加班费。\n加班和调休不能重复计算，两者选其一。', faqLinks: ['d8'] }
 ];
+
+// Department → Position → Scope mapping
+const KPI_DEPTS = {
+  '销售部': ['业务员','渠道维护人员','促销员'],
+  '生产部': ['生产人员'],
+  '其他': ['其他岗位']
+};
+const KPI_POS_SCOPES = {
+  '业务员': ['业务','业务/终端开发','业务/主管','全员'],
+  '渠道维护人员': ['业务/终端','业务','业务/终端开发','全员'],
+  '促销员': ['促销','全员'],
+  '生产人员': ['生产','全员'],
+  '其他岗位': ['全员','主管','经理级']
+};
 
 const KPI_REF = [
   { name:'销量达成率', desc:'月度销量达到XX', scope:'全员' },
@@ -1097,6 +1136,56 @@ function obReset(){
 const KPI_KEY = 'hr_kpi_submissions';
 const KPI_ROWS = 4; // 4 rows, matching original Excel template
 
+// --- Signature pad helper ---
+function initSigPad(canvasId){
+  var canvas = document.getElementById(canvasId);
+  if(!canvas) return null;
+  var ctx = canvas.getContext('2d');
+  var drawing = false, lastX=0, lastY=0, hasDrawn=false;
+  var dpr = window.devicePixelRatio || 1;
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#333';
+  }
+  function getPos(e){
+    var rect = canvas.getBoundingClientRect();
+    if(e.touches && e.touches[0]) return {x:e.touches[0].clientX-rect.left, y:e.touches[0].clientY-rect.top};
+    return {x:e.clientX-rect.left, y:e.clientY-rect.top};
+  }
+  function start(e){ e.preventDefault(); drawing=true; hasDrawn=true; var p=getPos(e); lastX=p.x; lastY=p.y; }
+  function draw(e){ if(!drawing) return; e.preventDefault(); var p=getPos(e); ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p.x,p.y); ctx.stroke(); lastX=p.x; lastY=p.y; }
+  function stop(){ drawing=false; }
+  canvas.addEventListener('mousedown',start);
+  canvas.addEventListener('mousemove',draw);
+  canvas.addEventListener('mouseup',stop);
+  canvas.addEventListener('mouseleave',stop);
+  canvas.addEventListener('touchstart',start,{passive:false});
+  canvas.addEventListener('touchmove',draw,{passive:false});
+  canvas.addEventListener('touchend',stop);
+  resize();
+  return {
+    clear: function(){ ctx.clearRect(0,0,canvas.width,canvas.height); hasDrawn=false; },
+    isEmpty: function(){ return !hasDrawn; },
+    getData: function(){ return hasDrawn ? canvas.toDataURL('image/png') : ''; },
+    loadData: function(url){
+      if(!url){ return; }
+      var img = new Image();
+      img.onload = function(){
+        var rect = canvas.getBoundingClientRect();
+        ctx.drawImage(img, 0, 0, rect.width, rect.height);
+        hasDrawn = true;
+      };
+      img.src = url;
+    }
+  };
+}
+
 // --- KPI data layer (cloud + localStorage fallback) ---
 function getKPISubs(){
   if(USE_CLOUD) return _cloudData.kpiSubmissions || [];
@@ -1161,12 +1250,59 @@ function kpiCheckSubmitted(){
   });
 }
 
+// --- Init dept/position dropdowns ---
+var _kpiSigPad = null; // employee signature pad
+function kpiInitDepts(){
+  var deptSel = document.getElementById('kpiDept');
+  if(!deptSel || deptSel.children.length > 1) return;
+  Object.keys(KPI_DEPTS).forEach(function(d){
+    var opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    deptSel.appendChild(opt);
+  });
+}
+function kpiOnDeptChange(){
+  var dept = document.getElementById('kpiDept').value;
+  var posSel = document.getElementById('kpiPosition');
+  posSel.innerHTML = '<option value="">请选择岗位</option>';
+  if(!dept){ posSel.disabled = true; return; }
+  KPI_DEPTS[dept].forEach(function(p){
+    var opt = document.createElement('option');
+    opt.value = p; opt.textContent = p;
+    posSel.appendChild(opt);
+  });
+  posSel.disabled = false;
+  kpiFilterRefs();
+}
+function kpiOnPosChange(){
+  kpiFilterRefs();
+}
+function kpiFilterRefs(){
+  var pos = document.getElementById('kpiPosition').value;
+  var list = document.getElementById('kpiRefList');
+  if(!pos){
+    list.innerHTML = KPI_REF.map(function(r,i){ return '<div class="ref-item kpi-ref-item" data-idx="'+i+'"><span class="ref-name">'+r.name+'</span><span class="ref-desc">'+r.desc+' ['+r.scope+']</span></div>'; }).join('');
+    return;
+  }
+  var scopes = KPI_POS_SCOPES[pos] || ['全员'];
+  var filtered = KPI_REF.map(function(r,i){ return {r:r, i:i}; }).filter(function(x){
+    return scopes.indexOf(x.r.scope) >= 0;
+  });
+  list.innerHTML = filtered.map(function(x){
+    return '<div class="ref-item kpi-ref-item" data-idx="'+x.i+'"><span class="ref-name">'+x.r.name+'</span><span class="ref-desc">'+x.r.desc+' ['+x.r.scope+']</span></div>';
+  }).join('');
+}
+
 // --- KPI init ---
 function kpiInit(){
-  if(document.getElementById('kpiTbody').children.length>0) return;
-  kpiBuildTable();
-  kpiBuildRef();
-  document.getElementById('kpiMonth').value = new Date().toISOString().slice(0,7);
+  kpiInitDepts();
+  if(document.getElementById('kpiTbody').children.length===0) kpiBuildTable();
+  kpiFilterRefs();
+  if(!document.getElementById('kpiMonth').value) document.getElementById('kpiMonth').value = new Date().toISOString().slice(0,7);
+  // Init signature pad
+  if(!_kpiSigPad){
+    _kpiSigPad = initSigPad('kpiSigCanvas');
+  }
   kpiCheckSubmitted();
 }
 
@@ -1185,15 +1321,13 @@ function kpiBuildTable(){
     html+='<td><input type="text" id="kpiTarget'+i+'" placeholder="目标数" class="kpi-calc-trigger"></td>';
     html+='<td><input type="text" id="kpiDone'+i+'" placeholder="已完成" class="kpi-calc-trigger"></td>';
     html+='<td class="rate-cell" id="kpiRate'+i+'">-</td>';
+    html+='<td class="score-cell" style="color:var(--text-tertiary)">-</td>';
     html+='</tr>';
   }
-  html+='<tr class="total-row"><td colspan="5">合计</td><td id="kpiTotalWeight">0%</td><td colspan="3"></td></tr>';
+  html+='<tr class="total-row"><td colspan="5">合计</td><td id="kpiTotalWeight">0%</td><td colspan="3"></td><td id="kpiTotalScore">-</td></tr>';
   tbody.innerHTML=html;
 }
 
-function kpiBuildRef(){
-  document.getElementById('kpiRefList').innerHTML=KPI_REF.map((r,i)=>'<div class="ref-item kpi-ref-item" data-idx="'+i+'"><span class="ref-name">'+r.name+'</span><span class="ref-desc">'+r.desc+' ['+r.scope+']</span></div>').join('');
-}
 function kpiToggleRef(){
   const p=document.getElementById('kpiRefPanel');
   p.style.display=p.style.display==='block'?'none':'block';
@@ -1241,20 +1375,23 @@ function kpiGetData(){
       weight:parseFloat(document.getElementById('kpiWeight'+i).value)||0,
       target:document.getElementById('kpiTarget'+i).value.trim(),
       done:document.getElementById('kpiDone'+i).value.trim(),
-      rate:document.getElementById('kpiRate'+i).textContent
+      rate:document.getElementById('kpiRate'+i).textContent,
+      score:'' // supervisor fills later
     });
   }
+  var sigData = _kpiSigPad ? _kpiSigPad.getData() : '';
   return {
     id:'kpi_'+Date.now()+'_'+Math.random().toString(36).substr(2,6),
     status:'pending_supervisor',
     name:document.getElementById('kpiName').value.trim(),
-    position:document.getElementById('kpiPosition').value.trim(),
+    dept:document.getElementById('kpiDept').value,
+    position:document.getElementById('kpiPosition').value,
     channel:document.getElementById('kpiChannel').value.trim(),
     month:document.getElementById('kpiMonth').value,
     supervisorName:document.getElementById('kpiSupervisorName').value.trim(),
     indicators,
     selfSummary:document.getElementById('kpiSelfSummary').value.trim(),
-    sigEmployee:document.getElementById('kpiSigEmployee').value.trim(),
+    sigEmployee:sigData,
     submittedAt:new Date().toISOString(),
     // Supervisor fills later:
     supervisorComment:'',
@@ -1267,10 +1404,11 @@ function kpiGetData(){
 function kpiSubmit(){
   const d=kpiGetData();
   if(!d.name) return alert('请填写被考核人姓名');
-  if(!d.position) return alert('请填写岗位');
+  if(!d.dept) return alert('请选择部门');
+  if(!d.position) return alert('请选择岗位');
   if(!d.channel) return alert('请填写负责渠道');
   if(!d.supervisorName) return alert('请填写直属主管姓名');
-  if(!d.sigEmployee) return alert('请填写被考核人签名');
+  if(_kpiSigPad && _kpiSigPad.isEmpty()) return alert('请手写被考核人签名');
   if(d.indicators.length===0) return alert('请至少填写一条考核指标');
 
   const totalW=d.indicators.reduce((s,i)=>s+i.weight,0);
@@ -1292,13 +1430,13 @@ function kpiSubmit(){
 function kpiExport(){
   const d=kpiGetData();
   let text='【'+d.month+'月度工作考核】\n';
-  text+='姓名：'+d.name+'  岗位：'+d.position+'  负责渠道：'+d.channel+'  主管：'+d.supervisorName+'\n\n';
+  text+='姓名：'+d.name+'  部门：'+d.dept+'  岗位：'+d.position+'  负责渠道：'+d.channel+'  主管：'+d.supervisorName+'\n\n';
   text+='指标项\t关键指标\t评分标准\t权重\t目标数\t已完成\t达成率\n';
   d.indicators.forEach(ind=>{
     text+=ind.item+'\t'+ind.key+'\t'+ind.standard+'\t'+ind.weight+'%\t'+ind.target+'\t'+ind.done+'\t'+ind.rate+'\n';
   });
   text+='\n自我总结：\n'+d.selfSummary+'\n';
-  text+='\n被考核人签名：'+d.sigEmployee;
+  text+='\n被考核人签名：（手写签名）';
   navigator.clipboard.writeText(text).then(()=>alert('✅ 已复制到剪贴板')).catch(()=>alert(text));
 }
 
@@ -1306,14 +1444,18 @@ function kpiReset(){
   if(!confirm('确定清空所有填写内容？')) return;
   for(let i=0;i<KPI_ROWS;i++){
     ['kpiItem','kpiKey','kpiStd','kpiWeight','kpiTarget','kpiDone'].forEach(prefix=>{
-      document.getElementById(prefix+i).value='';
+      var el=document.getElementById(prefix+i); if(el) el.value='';
     });
-    document.getElementById('kpiRate'+i).textContent='-';
+    var rateEl=document.getElementById('kpiRate'+i); if(rateEl) rateEl.textContent='-';
   }
-  ['kpiName','kpiPosition','kpiChannel','kpiSupervisorName','kpiSelfSummary','kpiSigEmployee'].forEach(id=>document.getElementById(id).value='');
+  ['kpiName','kpiChannel','kpiSupervisorName','kpiSelfSummary'].forEach(id=>{ var el=document.getElementById(id); if(el) el.value=''; });
+  var deptEl=document.getElementById('kpiDept'); if(deptEl) deptEl.value='';
+  var posEl=document.getElementById('kpiPosition'); if(posEl){ posEl.innerHTML='<option value="">请先选择部门</option>'; posEl.disabled=true; }
+  if(_kpiSigPad) _kpiSigPad.clear();
   document.getElementById('kpiTotalWeight').textContent='0%';
   document.getElementById('kpiWeightSum').textContent='0%';
   kpiCalc();
+  kpiFilterRefs();
 }
 
 // ========== 6b. SUPERVISOR REVIEW ==========
@@ -1401,13 +1543,14 @@ function kpiReviewOpen(idx){
   // Employee info (readonly)
   html += '<div class="kpi-info" style="margin-bottom:12px">';
   html += '<div class="info-item"><label>被考核人</label><div style="padding:7px 8px;font-size:13px">'+s.name+'</div></div>';
+  html += '<div class="info-item"><label>部门</label><div style="padding:7px 8px;font-size:13px">'+(s.dept||'')+'</div></div>';
   html += '<div class="info-item"><label>岗位</label><div style="padding:7px 8px;font-size:13px">'+s.position+'</div></div>';
   html += '<div class="info-item"><label>负责渠道</label><div style="padding:7px 8px;font-size:13px">'+s.channel+'</div></div>';
   html += '</div>';
 
   // Indicators table with score column
   html += '<div class="kpi-table-wrap"><table class="kpi-readonly-table">';
-  html += '<thead><tr><th>#</th><th>指标项</th><th>关键指标</th><th>评分标准</th><th>权重</th><th>目标数</th><th>已完成</th><th>达成率</th><th>考评评分</th></tr></thead><tbody>';
+  html += '<thead><tr><th>序号</th><th>指标项</th><th>关键指标</th><th>评分标准</th><th>权重</th><th>目标数</th><th>已完成</th><th>达成率</th><th>考评评分</th></tr></thead><tbody>';
   var totalWeight=0, totalScore=0;
   s.indicators.forEach(function(ind,i){
     var target=parseFloat(ind.target)||0;
@@ -1419,15 +1562,15 @@ function kpiReviewOpen(idx){
     var scoreNum = parseFloat(scoreVal)||0;
     totalWeight += ind.weight;
     totalScore += scoreNum;
-    html += '<tr><td>'+(i+1)+'</td><td>'+ind.item+'</td><td>'+(ind.key||'')+'</td><td>'+(ind.standard||'')+'</td><td>'+ind.weight+'%</td><td>'+ind.target+'</td><td>'+ind.done+'</td><td>'+rate+'</td>';
+    html += '<tr><td style="text-align:center">'+(i+1)+'</td><td>'+ind.item+'</td><td>'+(ind.key||'')+'</td><td>'+(ind.standard||'')+'</td><td>'+ind.weight+'%</td><td>'+ind.target+'</td><td>'+ind.done+'</td><td>'+rate+'</td>';
     if(isCompleted){
-      html += '<td class="score-cell">'+scoreVal+'</td>';
+      html += '<td class="score-cell" style="text-align:center;font-weight:600">'+scoreVal+'</td>';
     } else {
       html += '<td><input type="text" id="reviewScore'+i+'" value="'+autoScore+'" placeholder="评分" style="width:50px;text-align:center;border:1px solid #ddd;border-radius:4px;padding:3px;font-size:11px"></td>';
     }
     html += '</tr>';
   });
-  html += '<tr class="total-row"><td colspan="4">合计</td><td>'+totalWeight+'%</td><td colspan="3"></td><td id="reviewTotalScore">'+totalScore.toFixed(1)+'</td></tr>';
+  html += '<tr class="total-row"><td colspan="4" style="text-align:center">合计</td><td style="text-align:center">'+totalWeight+'%</td><td colspan="3"></td><td id="reviewTotalScore" style="text-align:center">'+totalScore.toFixed(1)+'</td></tr>';
   html += '</tbody></table></div>';
 
   if(!isCompleted){
@@ -1448,11 +1591,31 @@ function kpiReviewOpen(idx){
 
   // Signatures
   html += '<div class="kpi-signatures">';
-  html += '<div class="sig-item"><label>被考核人签名</label><div style="padding:8px;font-size:13px;border-bottom:1px solid var(--border)">'+(s.sigEmployee||'')+'</div></div>';
-  if(isCompleted){
-    html += '<div class="sig-item"><label>考核主管签名</label><div style="padding:8px;font-size:13px;border-bottom:1px solid var(--border)">'+(s.sigSupervisor||'')+'</div></div>';
+  // Employee signature (show as image)
+  html += '<div class="sig-item"><label>被考核人签名</label>';
+  if(s.sigEmployee && s.sigEmployee.indexOf('data:')===0){
+    html += '<div class="sig-display"><img src="'+s.sigEmployee+'" alt="签名"></div>';
   } else {
-    html += '<div class="sig-item"><label>考核主管签名 *</label><input type="text" id="reviewSig" placeholder="主管签名" autocomplete="off"></div>';
+    html += '<div class="sig-display"><span style="color:var(--text-tertiary);font-size:12px">'+(s.sigEmployee||'无签名')+'</span></div>';
+  }
+  html += '</div>';
+  // Supervisor signature
+  if(isCompleted){
+    html += '<div class="sig-item"><label>考核主管签名</label>';
+    if(s.sigSupervisor && s.sigSupervisor.indexOf('data:')===0){
+      html += '<div class="sig-display"><img src="'+s.sigSupervisor+'" alt="签名"></div>';
+    } else {
+      html += '<div class="sig-display"><span style="color:var(--text-tertiary);font-size:12px">'+(s.sigSupervisor||'无签名')+'</span></div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<div class="sig-item"><label>考核主管签名 *</label>';
+    html += '<div class="sig-pad-wrap">';
+    html += '<canvas class="sig-pad-canvas" id="reviewSigCanvas"></canvas>';
+    html += '<button class="sig-pad-clear" id="reviewSigClearBtn">清除</button>';
+    html += '</div>';
+    html += '<div class="sig-pad-hint">请在上方区域内手写签名</div>';
+    html += '</div>';
   }
   html += '</div>';
 
@@ -1472,6 +1635,14 @@ function kpiReviewOpen(idx){
   formEl.style.display = '';
   document.getElementById('kpiReviewList').style.display = 'none';
 
+  // Init supervisor signature pad
+  var reviewSigPad = null;
+  if(!isCompleted){
+    reviewSigPad = initSigPad('reviewSigCanvas');
+    var clearBtn = document.getElementById('reviewSigClearBtn');
+    if(clearBtn) clearBtn.addEventListener('click', function(){ if(reviewSigPad) reviewSigPad.clear(); });
+  }
+
   // Event listeners
   var backBtn = document.getElementById('kpiReviewBackBtn');
   if(backBtn) backBtn.addEventListener('click', kpiReviewList);
@@ -1488,21 +1659,21 @@ function kpiReviewOpen(idx){
     });
 
     var submitBtn = document.getElementById('kpiReviewSubmitBtn');
-    if(submitBtn) submitBtn.addEventListener('click', function(){ kpiReviewSubmit(idx); });
+    if(submitBtn) submitBtn.addEventListener('click', function(){ kpiReviewSubmit(idx, reviewSigPad); });
   } else {
     var exportBtn = document.getElementById('kpiReviewExportBtn');
     if(exportBtn) exportBtn.addEventListener('click', function(){ kpiExportOne(s); });
   }
 }
 
-function kpiReviewSubmit(idx){
+function kpiReviewSubmit(idx, sigPad){
   var subs = getKPISubs();
   var s = subs[idx];
   if(!s) return;
 
-  var sig = document.getElementById('reviewSig').value.trim();
-  if(!sig) return alert('请填写考核主管签名');
+  if(sigPad && sigPad.isEmpty()) return alert('请手写考核主管签名');
 
+  var sigData = sigPad ? sigPad.getData() : '';
   var comment = document.getElementById('reviewComment').value.trim();
 
   // Collect scores
@@ -1515,7 +1686,7 @@ function kpiReviewSubmit(idx){
   // Update record
   s.indicators.forEach(function(ind,i){ ind.score = scores[i]; });
   s.supervisorComment = comment;
-  s.sigSupervisor = sig;
+  s.sigSupervisor = sigData;
   s.status = 'completed';
   s.scoredAt = new Date().toISOString();
 
@@ -1545,12 +1716,20 @@ function kpiExportOne(s){
     return '<tr><td style="text-align:center">'+(i+1)+'</td><td>'+ind.item+'</td><td style="text-align:center">'+(ind.key||'')+'</td><td>'+(ind.standard||'')+'</td><td style="text-align:center">'+ind.weight+'%</td><td style="text-align:center">'+ind.target+'</td><td style="text-align:center">'+ind.done+'</td><td style="text-align:center">'+rate+'</td><td style="text-align:center;font-weight:600">'+score+'</td></tr>';
   }).join('');
 
+  // Build signature HTML
+  var sigEmpHTML = s.sigEmployee && s.sigEmployee.indexOf('data:')===0
+    ? '<img src="'+s.sigEmployee+'" style="max-height:40px;max-width:120px" alt="签名">'
+    : (s.sigEmployee||'');
+  var sigSupHTML = s.sigSupervisor && s.sigSupervisor.indexOf('data:')===0
+    ? '<img src="'+s.sigSupervisor+'" style="max-height:40px;max-width:120px" alt="签名">'
+    : (s.sigSupervisor||'');
+
   var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
   html += '<title>'+s.month+'月度工作考核 - '+s.name+'</title>';
   html += '<style>';
   html += 'body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;padding:20px;color:#333}';
   html += 'h2{text-align:center;font-size:18px;margin-bottom:16px}';
-  html += '.info-bar{display:flex;justify-content:space-between;margin-bottom:12px;font-size:13px}';
+  html += '.info-bar{display:flex;justify-content:space-between;margin-bottom:12px;font-size:13px;flex-wrap:wrap;gap:8px}';
   html += 'table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}';
   html += 'th,td{border:1px solid #999;padding:5px 4px}';
   html += 'th{background:#f0f0f0;font-weight:600;text-align:center}';
@@ -1559,7 +1738,7 @@ function kpiExportOne(s){
   html += '.summary-block .label{font-weight:600;margin-bottom:4px}';
   html += '.summary-block .content{background:#f9f9f9;padding:10px;border-radius:4px;white-space:pre-wrap;min-height:40px}';
   html += '.sig-bar{display:flex;justify-content:space-around;margin-top:24px;font-size:13px}';
-  html += '.sig-bar .sig{text-align:center;border-bottom:1px solid #333;padding:0 40px 4px;margin-bottom:4px;min-height:20px}';
+  html += '.sig-bar .sig{text-align:center;border-bottom:1px solid #333;padding:0 40px 4px;margin-bottom:4px;min-height:40px;display:flex;align-items:flex-end;justify-content:center}';
   html += '.export-btns{position:fixed;top:10px;right:10px;z-index:100}';
   html += '.export-btns button{padding:8px 16px;margin-left:8px;border:1px solid #07c196;background:#fff;color:#07c196;border-radius:6px;cursor:pointer;font-size:13px}';
   html += '.export-btns button.primary{background:#07c196;color:#fff}';
@@ -1572,9 +1751,9 @@ function kpiExportOne(s){
   html += '</div>';
 
   html += '<h2>'+s.month+'月度工作考核</h2>';
-  html += '<div class="info-bar"><span>姓名：<strong>'+s.name+'</strong></span><span>岗位：<strong>'+s.position+'</strong></span><span>负责渠道：<strong>'+s.channel+'</strong></span></div>';
+  html += '<div class="info-bar"><span>姓名：<strong>'+s.name+'</strong></span><span>部门：<strong>'+(s.dept||'')+'</strong></span><span>岗位：<strong>'+s.position+'</strong></span><span>负责渠道：<strong>'+s.channel+'</strong></span></div>';
 
-  html += '<table><thead><tr><th style="width:5%">#</th><th style="width:13%">指标项</th><th style="width:8%">指标属性</th><th style="width:15%">关键指标</th><th style="width:17%">评分标准</th><th style="width:8%">权重</th><th style="width:10%">目标数</th><th style="width:10%">已完成数</th><th style="width:8%">考评评分</th></tr></thead><tbody>';
+  html += '<table><thead><tr><th style="width:4%">序号</th><th style="width:12%">指标项</th><th style="width:8%">指标属性</th><th style="width:14%">关键指标</th><th style="width:16%">评分标准</th><th style="width:7%">权重</th><th style="width:9%">目标数</th><th style="width:9%">已完成数</th><th style="width:8%">考评评分</th></tr></thead><tbody>';
   html += rows;
   html += '<tr class="total-row"><td colspan="5" style="text-align:center">合计</td><td style="text-align:center">'+totalWeight+'%</td><td colspan="2"></td><td style="text-align:center">'+totalScore.toFixed(1)+'</td></tr>';
   html += '</tbody></table>';
@@ -1583,15 +1762,15 @@ function kpiExportOne(s){
   html += '<div class="summary-block"><div class="label">考核主管评价：</div><div class="content">'+(s.supervisorComment||'')+'</div></div>';
 
   html += '<div class="sig-bar">';
-  html += '<div><div class="sig">'+(s.sigEmployee||'')+'</div><div>被考核人签名</div></div>';
-  html += '<div><div class="sig">'+(s.sigSupervisor||'')+'</div><div>考核主管签名</div></div>';
+  html += '<div><div class="sig">'+sigEmpHTML+'</div><div>被考核人签名</div></div>';
+  html += '<div><div class="sig">'+sigSupHTML+'</div><div>考核主管签名</div></div>';
   html += '<div><div class="sig"></div><div>部门主管签名</div></div>';
   html += '</div>';
 
   // CSV data embedded for download
   var csvLines = [];
   csvLines.push(s.month+'月度工作考核');
-  csvLines.push('姓名,'+s.name+',岗位,'+s.position+',负责渠道,'+s.channel);
+  csvLines.push('姓名,'+s.name+',部门,'+(s.dept||'')+',岗位,'+s.position+',负责渠道,'+s.channel);
   csvLines.push('');
   csvLines.push('序号,指标项,关键指标,评分标准,权重,目标数,已完成数,达成率,考评评分');
   s.indicators.forEach(function(ind,i){
@@ -1607,8 +1786,8 @@ function kpiExportOne(s){
   csvLines.push('考核主管评价：');
   csvLines.push('"'+(s.supervisorComment||'').replace(/"/g,'""')+'"');
   csvLines.push('');
-  csvLines.push('被考核人签名：'+s.sigEmployee);
-  csvLines.push('考核主管签名：'+(s.sigSupervisor||''));
+  csvLines.push('被考核人签名：（手写签名）');
+  csvLines.push('考核主管签名：（手写签名）');
 
   html += '<script>';
   html += 'function downloadCSV(){';
@@ -1726,7 +1905,7 @@ function adminRender(sub){
       }
       actions += '<button class="btn-sm outline admin-kpi-view" data-idx="'+i+'">查看</button>';
       actions += '<button class="btn-sm outline admin-kpi-delete" data-idx="'+i+'">删除</button>';
-      return '<div class="admin-item"><div class="admin-item-header"><span class="admin-item-name">'+s.name+' - '+s.position+' '+statusBadge+'</span><span class="admin-item-time">'+s.month+'</span></div><div class="admin-item-body">'+supervisorInfo+'渠道：'+s.channel+' | 指标数：'+s.indicators.length+' | 总权重：'+s.indicators.reduce(function(sum,ind){return sum+ind.weight;},0)+'%</div><div class="admin-item-actions">'+actions+'</div></div>';
+      return '<div class="admin-item"><div class="admin-item-header"><span class="admin-item-name">'+s.name+' - '+(s.dept||'')+'/'+s.position+' '+statusBadge+'</span><span class="admin-item-time">'+s.month+'</span></div><div class="admin-item-body">'+supervisorInfo+'渠道：'+s.channel+' | 指标数：'+s.indicators.length+' | 总权重：'+s.indicators.reduce(function(sum,ind){return sum+ind.weight;},0)+'%</div><div class="admin-item-actions">'+actions+'</div></div>';
     }).join('');
   } else if(sub==='settings'){
     var pwdWarning = isAdminPwdDefault()
@@ -2010,6 +2189,11 @@ document.addEventListener('visibilitychange', function(){
   el=document.getElementById('kpiExportBtn'); if(el) el.addEventListener('click',kpiExport);
   el=document.getElementById('kpiResetBtn'); if(el) el.addEventListener('click',kpiReset);
   el=document.getElementById('kpiRefLink'); if(el) el.addEventListener('click',function(e){e.preventDefault();kpiToggleRef();});
+  // KPI dept/position cascading dropdowns
+  el=document.getElementById('kpiDept'); if(el) el.addEventListener('change',kpiOnDeptChange);
+  el=document.getElementById('kpiPosition'); if(el) el.addEventListener('change',kpiOnPosChange);
+  // KPI employee signature clear button
+  el=document.getElementById('kpiSigClearBtn'); if(el) el.addEventListener('click',function(){ if(_kpiSigPad) _kpiSigPad.clear(); });
   // KPI mode switch
   document.querySelectorAll('.kpi-mode-switch .mode-btn').forEach(function(btn){
     btn.addEventListener('click', function(){ kpiSwitchMode(btn.dataset.mode); });
