@@ -916,9 +916,9 @@ function renderMessageContent(m){
   var html='';
   if(m.media){
     if(m.media.type==='image'){
-      html+='<img src="'+m.media.url+'" class="chat-media-img" onclick="window.open(this.src)" loading="lazy">';
+      html+='<img src="'+m.media.url+'" class="chat-media-img" onclick="window.open(this.src)" loading="lazy" referrerpolicy="no-referrer">';
     } else if(m.media.type==='video'){
-      html+='<video src="'+m.media.url+'" class="chat-media-video" controls preload="metadata"></video>';
+      html+='<video src="'+m.media.url+'" class="chat-media-video" controls preload="metadata" referrerpolicy="no-referrer"></video>';
     }
   }
   if(m.text){
@@ -932,9 +932,9 @@ function renderAdminMsgContent(m){
   var html='';
   if(m.media){
     if(m.media.type==='image'){
-      html+='<img src="'+m.media.url+'" class="admin-item-media" onclick="window.open(this.src)" loading="lazy">';
+      html+='<img src="'+m.media.url+'" class="admin-item-media" onclick="window.open(this.src)" loading="lazy" referrerpolicy="no-referrer">';
     } else if(m.media.type==='video'){
-      html+='<video src="'+m.media.url+'" class="admin-item-video" controls preload="metadata"></video>';
+      html+='<video src="'+m.media.url+'" class="admin-item-video" controls preload="metadata" referrerpolicy="no-referrer"></video>';
     }
   }
   if(m.text){
@@ -2241,7 +2241,42 @@ document.addEventListener('visibilitychange', function(){
       var adminPanel = document.getElementById('adminPanel');
       if(adminPanel && adminPanel.classList.contains('show')){
         var activeSub = document.querySelector('.admin-subtab.active');
-        if(activeSub) adminRender(activeSub.getAttribute('data-asub'));
+        if(activeSub){
+          var subName = activeSub.getAttribute('data-asub');
+          // Save reply input values & focus before re-rendering (prevents text loss on 10s refresh)
+          var savedInputs = {};
+          var savedFocusId = null;
+          var savedFocusPos = 0;
+          if(subName === 'chat'){
+            document.querySelectorAll('.chat-reply-box input[type="text"]').forEach(function(inp){
+              if(inp.value){
+                savedInputs[inp.id] = inp.value;
+                if(document.activeElement === inp){
+                  savedFocusId = inp.id;
+                  savedFocusPos = inp.selectionStart;
+                }
+              }
+            });
+          }
+          // Only re-render chat if data actually changed (avoid unnecessary disruption)
+          if(subName === 'chat'){
+            adminRender(subName);
+            // Restore saved input values & focus
+            Object.keys(savedInputs).forEach(function(id){
+              var inp = document.getElementById(id);
+              if(inp){ inp.value = savedInputs[id]; }
+            });
+            if(savedFocusId){
+              var focusInp = document.getElementById(savedFocusId);
+              if(focusInp){
+                focusInp.focus();
+                try{ focusInp.setSelectionRange(savedFocusPos, savedFocusPos); }catch(e){}
+              }
+            }
+          } else {
+            adminRender(subName);
+          }
+        }
       }
     });
   }
@@ -2389,6 +2424,16 @@ document.addEventListener('visibilitychange', function(){
     if(btn){ adminExportKPI(parseInt(btn.dataset.idx)); return; }
     btn=e.target.closest('#adminChangePwdBtn');
     if(btn){ adminChangePwd(); return; }
+  });
+
+  // --- Admin reply input: Enter to send ---
+  el=document.getElementById('adminContent');
+  if(el) el.addEventListener('keydown',function(e){
+    if(e.key==='Enter' && e.target && e.target.id && e.target.id.indexOf('reply_')===0){
+      e.preventDefault();
+      var name=e.target.id.substring(6);
+      adminReply(name);
+    }
   });
 
   // --- Admin file input for media upload ---
