@@ -27,8 +27,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 /* ====== Q&A Tab ====== */
 .search-box{position:relative;margin-bottom:14px}
 .search-box input{width:100%;padding:12px 44px 12px 16px;border:2px solid var(--border);border-radius:var(--radius);font-size:15px;outline:none;transition:.2s;background:var(--card-bg);font-family:inherit}
+.search-box.has-text input{padding-right:72px}
 .search-box input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(7,193,96,.1)}
-.search-box .search-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--text-tertiary)}
+.search-box .search-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--text-tertiary);cursor:pointer;transition:color .2s;padding:4px}
+.search-box .search-icon:hover{color:var(--primary)}
+.search-box .search-icon:active{color:var(--primary-dark)}
+.search-box .clear-btn{position:absolute;right:44px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text-tertiary);cursor:pointer;display:none;padding:4px;transition:color .2s}
+.search-box .clear-btn:hover{color:var(--danger)}
+.search-box .clear-btn.show{display:block}
 .quick-examples{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .quick-example{font-size:12px;padding:6px 12px;background:var(--primary-light);color:var(--primary-dark);border-radius:20px;cursor:pointer;border:none;font-family:inherit;white-space:nowrap}
 
@@ -51,6 +57,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 /* No results */
 .no-result{text-align:center;padding:40px 20px;color:var(--text-secondary)}
 .no-result .icon{font-size:48px;margin-bottom:12px}
+.btn-new-question{transition:background .2s,transform .1s}
+.btn-new-question:hover{background:var(--primary-dark)!important}
+.btn-new-question:active{transform:scale(.97)}
 
 /* ====== Chat Tab ====== */
 .chat-init{text-align:center;padding:20px}
@@ -228,8 +237,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 .chat-upload-progress{font-size:12px;color:var(--text-secondary);padding:8px;text-align:center}
 .chat-file-preview{position:relative;display:inline-block;margin:4px}
 .chat-file-preview .preview-remove{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.admin-item-media{max-width:200px;max-height:150px;border-radius:6px;margin:4px 0;cursor:pointer}
-.admin-item-video{max-width:220px;max-height:150px;border-radius:6px;margin:4px 0}
+.admin-item-media{max-width:200px;max-height:150px;border-radius:6px;margin:4px 0;cursor:pointer;transition:transform .2s}
+.admin-item-media:hover{transform:scale(1.05)}
+.admin-item-video{max-width:220px;max-height:150px;border-radius:6px;margin:4px 0;cursor:pointer;transition:transform .2s}
+.admin-item-video:hover{transform:scale(1.05)}
+.chat-media-img:hover{opacity:.9}
+.chat-media-video:hover{opacity:.9}
+
+/* Lightbox modal */
+.lightbox-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn .2s ease}
+.lightbox-overlay img{max-width:92%;max-height:88%;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.5);object-fit:contain}
+.lightbox-overlay video{max-width:92%;max-height:88%;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.lightbox-close{position:absolute;top:16px;right:20px;color:#fff;font-size:36px;cursor:pointer;line-height:1;z-index:10000;opacity:.7;transition:opacity .2s}
+.lightbox-close:hover{opacity:1}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .admin-item .btn-sm.danger{background:var(--danger);color:#fff}
 .admin-pwd-warning{background:#fff3cd;border:1px solid #ffeaa7;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#856404;line-height:1.6}
 .admin-pwd-warning strong{color:#d97706}
@@ -270,7 +291,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 <div class="tab-content active" id="tab-qa">
   <div class="search-box">
     <input type="text" id="qaSearch" placeholder="输入你的问题，如：请了3天病假工资怎么算？" autocomplete="off">
-    <span class="search-icon">🔍</span>
+    <span class="clear-btn" id="qaClearBtn">✕</span>
+    <span class="search-icon" id="qaSearchIcon">🔍</span>
   </div>
   <div class="quick-examples" id="qaExamples"></div>
   <div id="qaResult"></div>
@@ -897,13 +919,62 @@ function qaSearchFn(){
   }
 
   if(!html) html='<div class="no-result"><div class="icon">🔍</div>未找到相关答案<br><span style="font-size:13px">试试换个关键词，或切换到「人工客服」直接留言</span></div>';
+  
+  // Add "new question" button at the end
+  html += '<div style="text-align:center;margin-top:16px"><button class="btn-new-question" id="btnNewQuestion" style="padding:10px 28px;background:var(--primary);color:#fff;border:none;border-radius:20px;font-size:14px;cursor:pointer;font-family:inherit">✏️ 提问新问题</button></div>';
+  
   qaResult.innerHTML=html;
+  
+  // Attach click handler for new question button
+  var newQBtn=document.getElementById('btnNewQuestion');
+  if(newQBtn){
+    newQBtn.addEventListener('click',function(){
+      qaSearch.value='';
+      qaResult.innerHTML='';
+      var clearBtn=document.getElementById('qaClearBtn');
+      if(clearBtn) clearBtn.classList.remove('show');
+      var searchBox=qaSearch.closest('.search-box');
+      if(searchBox) searchBox.classList.remove('has-text');
+      qaSearch.focus();
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  }
 }
 
+// Real-time search with debounce
 qaSearch.addEventListener('input',function(){
   clearTimeout(this._t);
   this._t=setTimeout(qaSearchFn,200);
+  var clearBtn=document.getElementById('qaClearBtn');
+  var searchBox=this.closest('.search-box');
+  var hasText=this.value.length>0;
+  if(clearBtn){ clearBtn.classList.toggle('show', hasText); }
+  if(searchBox){ searchBox.classList.toggle('has-text', hasText); }
 });
+
+// Enter key to search
+qaSearch.addEventListener('keydown',function(e){
+  if(e.key==='Enter'){ e.preventDefault(); clearTimeout(this._t); qaSearchFn(); }
+});
+
+// Search icon click to search
+document.getElementById('qaSearchIcon').addEventListener('click',function(){
+  clearTimeout(qaSearch._t);
+  qaSearchFn();
+  qaSearch.focus();
+});
+
+// Clear button
+document.getElementById('qaClearBtn').addEventListener('click',function(){
+  qaSearch.value='';
+  qaResult.innerHTML='';
+  this.classList.remove('show');
+  var searchBox=this.closest('.search-box');
+  if(searchBox) searchBox.classList.remove('has-text');
+  qaSearch.focus();
+});
+
+// Ctrl+K to focus search
 document.addEventListener('keydown',function(e){ if(e.ctrlKey&&e.key==='k'){ e.preventDefault(); qaSearch.focus(); } });
 
 // ========== 4. CHAT ENGINE ==========
@@ -911,14 +982,37 @@ const CHAT_KEY = 'hr_chat_data';
 let chatName = '';
 var _lastHrMsgCount = -1; // 员工端：跟踪HR回复数量（通知用）
 
+// --- Lightbox for image/video zoom ---
+function openLightbox(url, type){
+  var existing = document.getElementById('lightboxOverlay');
+  if(existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.className = 'lightbox-overlay';
+  overlay.id = 'lightboxOverlay';
+  if(type==='video'){
+    overlay.innerHTML = '<span class="lightbox-close">&times;</span><video src="'+url+'" controls autoplay referrerpolicy="no-referrer"></video>';
+  } else {
+    overlay.innerHTML = '<span class="lightbox-close">&times;</span><img src="'+url+'" referrerpolicy="no-referrer">';
+  }
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', function(e){
+    if(e.target===overlay || e.target.classList.contains('lightbox-close')){
+      overlay.remove();
+    }
+  });
+  document.addEventListener('keydown', function escHandler(e){
+    if(e.key==='Escape'){ overlay.remove(); document.removeEventListener('keydown', escHandler); }
+  });
+}
+
 // --- Render message content (text + media) ---
 function renderMessageContent(m){
   var html='';
   if(m.media){
     if(m.media.type==='image'){
-      html+='<img src="'+m.media.url+'" class="chat-media-img" onclick="window.open(this.src)" loading="lazy" referrerpolicy="no-referrer">';
+      html+='<img src="'+m.media.url+'" class="chat-media-img" onclick="openLightbox(this.src,\'image\')" loading="lazy" referrerpolicy="no-referrer">';
     } else if(m.media.type==='video'){
-      html+='<video src="'+m.media.url+'" class="chat-media-video" controls preload="metadata" referrerpolicy="no-referrer"></video>';
+      html+='<video src="'+m.media.url+'" class="chat-media-video" onclick="openLightbox(this.src,\'video\')" preload="metadata" referrerpolicy="no-referrer"></video>';
     }
   }
   if(m.text){
@@ -932,9 +1026,9 @@ function renderAdminMsgContent(m){
   var html='';
   if(m.media){
     if(m.media.type==='image'){
-      html+='<img src="'+m.media.url+'" class="admin-item-media" onclick="window.open(this.src)" loading="lazy" referrerpolicy="no-referrer">';
+      html+='<img src="'+m.media.url+'" class="admin-item-media" onclick="openLightbox(this.src,\'image\')" loading="lazy" referrerpolicy="no-referrer">';
     } else if(m.media.type==='video'){
-      html+='<video src="'+m.media.url+'" class="admin-item-video" controls preload="metadata" referrerpolicy="no-referrer"></video>';
+      html+='<video src="'+m.media.url+'" class="admin-item-video" onclick="openLightbox(this.src,\'video\')" preload="metadata" referrerpolicy="no-referrer"></video>';
     }
   }
   if(m.text){
